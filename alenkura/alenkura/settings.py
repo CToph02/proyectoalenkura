@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'paciApp',
     'indicadoresApp',
     'core',
+    'ped',
 ]
 
 MIDDLEWARE = [

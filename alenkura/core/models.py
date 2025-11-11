@@ -3,7 +3,6 @@ from django.db import models
 
 class Asignatura(models.Model):
     nombre = models.CharField(max_length=100)
-    objetivo_evaluacion = models.TextField()
 
     def __str__(self):
         return self.nombre

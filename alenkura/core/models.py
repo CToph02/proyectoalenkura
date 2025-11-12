@@ -90,3 +90,20 @@ class Estudiante(DateTime):
 
     def __str__(self) -> str:
         return f'{self.first_name} {self.last_name}'
+    
+    def get_age(self):
+        from datetime import date
+        today = date.today()
+        age = today.year - self.birth_date.year
+        month = today.month - self.birth_date.month
+        if month < 0:
+            age -= 1
+            month += 12
+        elif month == 0 and today.day < self.birth_date.day:
+            age -= 1
+            month = 11
+        return f'{age} años y {month} meses'
+    
+    @property
+    def edad(self):
+        return self.get_age()

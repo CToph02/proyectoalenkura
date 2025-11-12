@@ -23,4 +23,5 @@ urlpatterns = [
     path('ped/', include('ped.urls')),
     path('accounts/', include('accounts.urls')),
     path('paci/', include('paciApp.urls')),
+    path('core/', include('core.urls')),
 ]

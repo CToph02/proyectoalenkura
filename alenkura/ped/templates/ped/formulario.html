@@ -1,444 +1,214 @@
+{% extends 'base.html' %}
 {% load ped_extras %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ page_title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        :root {
-            color-scheme: light;
-            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-        }
+{% block content %}
+<h1 class="text-3xl font-semibold">{{ page_title }}</h1>
 
-        body {
-            margin: 0;
-            padding: 1.5rem;
-            background: #f5f2ef;
-        }
+{% if messages %}
+<div class="alert alert-success">
+    <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
 
-        main {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: #fff;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 45px rgba(15, 18, 31, 0.08);
-        }
+{% if errors %}
+<div class="alert alert-error">
+    <ul>
+        {% for error in errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
 
-        h1 {
-            margin: 0 0 1.5rem;
-            color: #2b2b2b;
-        }
+<section class="flex flex-col mb-8 mt-8">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-semibold">Planes PED creados</h2>
+        <a href="#" class="block rounded-lg px-4 py-2 text-sm font-medium text-white 
+        hover:bg-gray-800 hover:text-gray-600 
+        dark:text-white dark:bg-gray-600 dark:hover:bg-gray-700 dark:hover:text-white">
+            Crear nuevo PED
+          </a>
+    </div>
 
-        .panel {
-            border: 1px solid #e6d4c9;
-            border-radius: 12px;
-            padding: 1.5rem;
-            background: #fffdf9;
-            margin-bottom: 1.5rem;
-        }
+    {% if planes %}
+    <div class="max-h-100 overflow-x-auto rounded border border-gray-300 shadow-sm dark:border-gray-600">
+        <table class="min-w-full divide-y-2 divide-gray-200 dark:divide-gray-700">
+            <thead class="tr:text-left rtl:text-right">
+                <tr class="*:font-medium *:text-gray-900 dark:*:text-white">
+                    <th class="px-3 py-2 whitespace-nowrap">ID</th>
+                    <th class="px-3 py-2 whitespace-nowrap">Decreto</th>
+                    <th class="px-3 py-2 whitespace-nowrap">Creado</th>
+                    <th class="px-3 py-2 whitespace-nowrap">Asignaturas</th>
+                    <th class="px-3 py-2 whitespace-nowrap">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                {% for plan in planes %}
+                <tr class="*:text-gray-900 *:first:font-medium dark:*:text-white">
+                    <td class="px-3 py-2 whitespace-nowrap">#{{ plan.id }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap">{{ plan.decreto.nombre }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap">{{ plan.creado_en|date:"d/m/Y H:i" }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap">{{ plan.plan_asignaturas.count }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap">
+                        <a class="inline-block rounded-sm bg-indigo-600 px-12 py-3 text-white hover:bg-indigo-700" href="{% url 'ped:plan_pdf' plan.id %}" target="_blank">
+                            Descargar PDF
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p>No se han creado planes de evaluación todavía.</p>
+    {% endif %}
+</section>
 
-        .panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-bottom: 1rem;
-        }
-
-        .panel-header h2 {
-            margin: 0;
-            color: #4a3428;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.65rem 1.2rem;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            text-decoration: none;
-            transition: opacity 0.2s ease;
-        }
-
-        .btn-primary {
-            background: #c57a44;
-            color: #fff;
-        }
-
-        .btn-secondary {
-            background: #f2e1d6;
-            color: #4a3428;
-        }
-
-        .grid {
-            display: grid;
-            gap: 1.5rem;
-        }
-
-        .grid-two {
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.5rem;
-        }
-
-        label {
-            font-weight: 600;
-            display: block;
-            margin-bottom: 0.35rem;
-            color: #4e4744;
-        }
-
-        select,
-        textarea {
-            width: 100%;
-            padding: 0.65rem 0.75rem;
-            border: 1px solid #d9c7be;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-family: inherit;
-            background: #fff8f2;
-            resize: vertical;
-        }
-
-        select[multiple] {
-            min-height: 150px;
-        }
-
-        textarea {
-            min-height: 80px;
-        }
-
-        button[type="submit"] {
-            margin-top: 2rem;
-            width: 100%;
-            padding: 0.9rem;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #fff;
-            background: #c57a44;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: opacity 0.2s ease;
-        }
-
-        button[type="submit"]:hover {
-            opacity: 0.9;
-        }
-
-        .alert {
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-
-        .alert-error {
-            background: #ffe8e6;
-            border: 1px solid #f5a5a1;
-            color: #883131;
-        }
-
-        .alert-success {
-            background: #e8f9ed;
-            border: 1px solid #9ad0a0;
-            color: #215732;
-        }
-
-        .tabla-planes {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.95rem;
-        }
-
-        .tabla-wrapper {
-            overflow-x: auto;
-        }
-
-        .tabla-planes th,
-        .tabla-planes td {
-            padding: 0.85rem;
-            border-bottom: 1px solid #eadfd8;
-            text-align: left;
-        }
-
-        .tabla-planes th {
-            background: #f3e4da;
-            color: #4a3428;
-            font-weight: 700;
-        }
-
-        .tabla-planes tbody tr:hover {
-            background: #fff7ef;
-        }
-
-        .asignatura-bloque {
-            padding: 1rem;
-            border-radius: 10px;
-            background: #fff8f2;
-        }
-
-        .asignatura-bloque + .asignatura-bloque {
-            margin-top: 1rem;
-        }
-
-        .eje-item {
-            margin-bottom: 1rem;
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 600;
-            color: #4d3b30;
-            margin-bottom: 0.35rem;
-        }
-
-        .resumen-card {
-            border-radius: 10px;
-            border: 1px solid #e0cfc6;
-            padding: 1.25rem;
-            margin-top: 2rem;
-            background: #fff9f4;
-        }
-
-        .subtitulo {
-            margin: 2rem 0 0.5rem;
-            font-size: 1.1rem;
-            color: #4a3428;
-        }
-
-        .seccion-asignaturas > p {
-            margin: 0 0 1rem;
-            color: #6d6a68;
-        }
-
-        small {
-            color: #6d6a68;
-        }
-    </style>
-</head>
-<body>
-    <main>
-        <h1>{{ page_title }}</h1>
-
-        <section class="panel">
-            <div class="panel-header">
-                <h2>Planes PED creados</h2>
-                <a class="btn btn-primary" href="#formulario-ped">Crear nuevo PED</a>
-            </div>
-
-            {% if planes %}
-                <div class="tabla-wrapper">
-                    <table class="tabla-planes">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Decreto</th>
-                                <th>Creado</th>
-                                <th>Asignaturas</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for plan in planes %}
-                                <tr>
-                                    <td>#{{ plan.id }}</td>
-                                    <td>{{ plan.decreto.nombre }}</td>
-                                    <td>{{ plan.creado_en|date:"d/m/Y H:i" }}</td>
-                                    <td>{{ plan.plan_asignaturas.all|length }}</td>
-                                    <td>
-                                        <a class="btn btn-secondary" href="{% url 'ped:plan_pdf' plan.id %}" target="_blank">
-                                            Descargar PDF
-                                        </a>
-                                    </td>
-                                </tr>
+<form method="post" id="formulario-ped">
+    {% csrf_token %}
+    <section class="flex gap-8 mb-8">
+        <div class="flex flex-col w-150">
+            <label class="mb-4 text-2xl" for="decreto">Decreto</label>
+            <select
+                class="p-4 mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                id="decreto" name="decreto" required>
+                <option value="">Selecciona un decreto</option>
+                {% for decreto in decretos %}
+                <option value="{{ decreto.id }}" {% if selected_decreto == decreto.id %} selected {% endif %}>
+                    {{ decreto.nombre }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="flex flex-col w-150">
+            <label class="mb-4 text-2xl" for="asignaturas">Asignaturas</label>
+            <select
+                class="p-4 mb-4 mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                id="asignaturas" name="asignaturas" multiple required>
+                {% for asignatura in asignaturas %}
+                <option value="{{ asignatura.id }}" {% if asignatura.id in selected_asignaturas %} selected {% endif %}>
+                    {{ asignatura.nombre }}
+                </option>
+                {% endfor %}
+            </select>
+            <small>Selecciona todas las asignaturas que formarán parte del plan.</small>
+        </div>
+    </section>
+    <div class="mb-4">
+        <h2 class="mb-4 text-2xl">Detalle por asignatura</h2>
+        <p class="mb-4">Solo se mostrarán las asignaturas seleccionadas en el listado superior.</p>
+        <div id="asignaturas-contenido" class="grid grid-cols-2 gap-4">
+            {% for asignatura in asignaturas %}
+            <article class="bg-gray-700 rounded p-4" data-asignatura-id="{{ asignatura.id }}" {% if asignatura.id not in selected_asignaturas %} hidden {% endif %}>
+                <h3 class="text-xl mb-4">{{ asignatura.nombre }}</h3>
+    
+                <div class="grid">
+                    {% field_name "ejes_" asignatura.id as ejes_checkbox_name %}
+                    <section>
+                        <h4 class="text-xl mb-4">¿Qué evaluar?</h4>
+                        {% if asignatura.ejes.all %}
+                            {% for eje in asignatura.ejes.all %}
+                                {% field_name "eje_" eje.id as eje_field_name %}
+                                {% checked_option form_values ejes_checkbox_name eje.id as eje_checked %}
+                                <div class="flex flex-col justify-center bg-gray-600 p-2 mb-4 gap-2 rounded">
+                                    <label>
+                                        <input class="size-5 rounded border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-900 dark:ring-offset-gray-900 dark:checked:bg-blue-600"
+                                            type="checkbox" name="{{ ejes_checkbox_name }}" value="{{ eje.id }}"
+                                            data-target="{{ eje_field_name }}" {% if eje_checked %}checked{% endif %}>
+                                        {{ eje.nombre }}
+                                    </label>
+                                    <textarea class="border rounded p-2" id="{{ eje_field_name }}" name="{{ eje_field_name }}" placeholder="Detalla el contenido para este eje." {% if not eje_checked %} hidden {%endif%}>
+                                        {{ form_values|get_value:eje_field_name }}
+                                    </textarea>
+                                </div>
                             {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <p>No se han creado planes de evaluación todavía.</p>
-            {% endif %}
-        </section>
-
-        {% if messages %}
-            <div class="alert alert-success">
-                <ul>
-                    {% for message in messages %}
-                        <li>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
-
-        {% if errors %}
-            <div class="alert alert-error">
-                <ul>
-                    {% for error in errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
-
-        <form method="post" id="formulario-ped">
-            {% csrf_token %}
-            <section class="grid grid-two">
-                <div>
-                    <label for="decreto">Decreto</label>
-                    <select id="decreto" name="decreto" required>
-                        <option value="">Selecciona un decreto</option>
-                        {% for decreto in decretos %}
-                            <option value="{{ decreto.id }}" {% if selected_decreto == decreto.id %}selected{% endif %}>
-                                {{ decreto.nombre }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label for="asignaturas">Asignaturas</label>
-                    <select id="asignaturas" name="asignaturas" multiple required>
-                        {% for asignatura in asignaturas %}
-                            <option value="{{ asignatura.id }}" {% if asignatura.id in selected_asignaturas %}selected{% endif %}>
-                                {{ asignatura.nombre }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                    <small>Selecciona todas las asignaturas que formarán parte del plan.</small>
-                </div>
-            </section>
-
-            <section class="resumen-card">
-                <h2>Decreto seleccionado</h2>
-                <p id="decreto-seleccionado">
-                    {% if selected_decreto %}
-                        {{ decretos|get_decreto_nombre:selected_decreto }}
-                    {% else %}
-                        Aún no seleccionado.
-                    {% endif %}
-                </p>
-            </section>
-
-            <section class="seccion-asignaturas">
-                <h2 class="subtitulo">Detalle por asignatura</h2>
-                <p>Solo se mostrarán las asignaturas seleccionadas en el listado superior.</p>
-                <div id="asignaturas-contenido" class="grid">
-                    {% for asignatura in asignaturas %}
-                        <article class="asignatura-bloque"
-                                 data-asignatura-id="{{ asignatura.id }}"
-                                 {% if asignatura.id not in selected_asignaturas %}hidden{% endif %}>
-                            <h3>{{ asignatura.nombre }}</h3>
-
-                            <div class="grid grid-two">
-                                {% field_name "ejes_" asignatura.id as ejes_checkbox_name %}
-                                <section>
-                                    <h4>¿Qué evaluar?</h4>
-                                    {% if asignatura.ejes.all %}
-                                        {% for eje in asignatura.ejes.all %}
-                                            {% field_name "eje_" eje.id as eje_field_name %}
-                                            {% checked_option form_values ejes_checkbox_name eje.id as eje_checked %}
-                                            <div class="eje-item">
-                                                <label class="checkbox-label">
-                                                    <input type="checkbox"
-                                                           name="{{ ejes_checkbox_name }}"
-                                                           value="{{ eje.id }}"
-                                                           data-target="{{ eje_field_name }}"
-                                                           {% if eje_checked %}checked{% endif %}>
-                                                    {{ eje.nombre }}
-                                                </label>
-                                                <textarea id="{{ eje_field_name }}"
-                                                          name="{{ eje_field_name }}"
-                                                          placeholder="Detalla el contenido para este eje."
-                                                          {% if not eje_checked %}hidden{% endif %}>{{ form_values|get_value:eje_field_name }}</textarea>
-                                            </div>
-                                        {% endfor %}
-                                    {% else %}
-                                        <p>No hay ejes asociados a esta asignatura en Core.</p>
-                                    {% endif %}
-                                </section>
-
-                                <section>
-                                    <h4>¿Cómo evaluar?</h4>
+                        {% else %}
+                            <p>No hay ejes asociados a esta asignatura en Core.</p>
+                        {% endif %}
+                    </section>
+                    <div class="flex justify-between">
+                        <section class="w-">
+                            <h4 class="text-xl mb-4">¿Cómo evaluar?</h4>
+                    
+                            <div class="flex gap-8">
+                                <div class="flex flex-col">
                                     {% field_name "procedimiento_" asignatura.id as procedimiento_name %}
-                                    <label for="{{ procedimiento_name }}">Procedimiento</label>
-                                    <textarea id="{{ procedimiento_name }}"
-                                              name="{{ procedimiento_name }}"
-                                              placeholder="Describe los procedimientos para esta asignatura.">{{ form_values|get_value:procedimiento_name }}</textarea>
-
+                                    <label class="mb-4" for="{{ procedimiento_name }}">Procedimiento</label>
+                                    <textarea class="border rounded p-2" id="{{ procedimiento_name }}" name="{{ procedimiento_name }}"
+                                        placeholder="Describe los procedimientos para esta asignatura.">{{ form_values|get_value:procedimiento_name }}</textarea>
+                                </div>
+                                <div class="flex flex-col">
                                     {% field_name "instrumento_" asignatura.id as instrumento_name %}
-                                    <label for="{{ instrumento_name }}">Instrumento</label>
-                                    <textarea id="{{ instrumento_name }}"
-                                              name="{{ instrumento_name }}"
-                                              placeholder="Describe los instrumentos a utilizar.">{{ form_values|get_value:instrumento_name }}</textarea>
-                                </section>
+                                    <label class="mb-4" for="{{ instrumento_name }}">Instrumento</label>
+                                    <textarea class="border rounded p-2" id="{{ instrumento_name }}" name="{{ instrumento_name }}"
+                                        placeholder="Describe los instrumentos a utilizar.">{{ form_values|get_value:instrumento_name }}</textarea>
+                                </div>
                             </div>
-
-                            <section>
-                                <h4>¿Para qué evaluar?</h4>
-                                {% field_name "objetivo_" asignatura.id as objetivo_name %}
-                                <textarea id="{{ objetivo_name }}"
-                                          name="{{ objetivo_name }}"
-                                          placeholder="Redacta el objetivo para esta asignatura.">{{ form_values|get_value:objetivo_name }}</textarea>
-                            </section>
-                        </article>
-                    {% endfor %}
+                        </section>
+                        <section>
+                            <h4 class="text-xl mb-4">¿Para qué evaluar?</h4>
+                            {% field_name "objetivo_" asignatura.id as objetivo_name %}
+                            <textarea class="border rounded p-2 h-25" id="{{ objetivo_name }}" name="{{ objetivo_name }}"
+                                placeholder="Redacta el objetivo para esta asignatura.">{{ form_values|get_value:objetivo_name }}</textarea>
+                        </section>
+                    </div>
+                    
                 </div>
-            </section>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+    <button class="inline-block rounded-sm bg-indigo-600 px-12 py-3 text-white hover:bg-indigo-700" type="submit">
+        Guardar formulario PED
+    </button>
+</form>
 
-            <button type="submit">Guardar formulario PED</button>
-        </form>
-    </main>
+<script>
+    (function () {
+        const selectAsignaturas = document.getElementById('asignaturas');
+        const bloques = document.querySelectorAll('[data-asignatura-id]');
+        const decretoSelect = document.getElementById('decreto');
+        const decretoLabel = document.getElementById('decreto-seleccionado');
+        const ejeCheckboxes = document.querySelectorAll('input[type="checkbox"][data-target]');
 
-    <script>
-        (function () {
-            const selectAsignaturas = document.getElementById('asignaturas');
-            const bloques = document.querySelectorAll('[data-asignatura-id]');
-            const decretoSelect = document.getElementById('decreto');
-            const decretoLabel = document.getElementById('decreto-seleccionado');
-            const ejeCheckboxes = document.querySelectorAll('input[type="checkbox"][data-target]');
-
-            function actualizarBloques() {
-                const activos = Array.from(selectAsignaturas.selectedOptions).map(option => option.value);
-                bloques.forEach(bloque => {
-                    const id = bloque.getAttribute('data-asignatura-id');
-                    bloque.hidden = !activos.includes(id);
-                });
-            }
-
-            function actualizarDecreto() {
-                const texto = decretoSelect.selectedOptions.length
-                    ? decretoSelect.selectedOptions[0].textContent
-                    : 'Aún no seleccionado.';
-                decretoLabel.textContent = texto;
-            }
-
-            function toggleTextarea(event) {
-                const targetId = event.currentTarget.getAttribute('data-target');
-                const textarea = document.getElementById(targetId);
-                if (!textarea) {
-                    return;
-                }
-                textarea.hidden = !event.currentTarget.checked;
-                if (!event.currentTarget.checked) {
-                    textarea.value = '';
-                }
-            }
-
-            selectAsignaturas.addEventListener('change', actualizarBloques);
-            decretoSelect.addEventListener('change', actualizarDecreto);
-            ejeCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', toggleTextarea);
+        function actualizarBloques() {
+            const activos = Array.from(selectAsignaturas.selectedOptions).map(option => option.value);
+            bloques.forEach(bloque => {
+                const id = bloque.getAttribute('data-asignatura-id');
+                bloque.hidden = !activos.includes(id);
             });
+        }
 
-            actualizarBloques();
-            actualizarDecreto();
-        }());
-    </script>
-</body>
-</html>
+        function actualizarDecreto() {
+            const texto = decretoSelect.selectedOptions.length
+                ? decretoSelect.selectedOptions[0].textContent
+                : 'Aún no seleccionado.';
+            decretoLabel.textContent = texto;
+        }
+
+        function toggleTextarea(event) {
+            const targetId = event.currentTarget.getAttribute('data-target');
+            const textarea = document.getElementById(targetId);
+            if (!textarea) {
+                return;
+            }
+            textarea.hidden = !event.currentTarget.checked;
+            if (!event.currentTarget.checked) {
+                textarea.value = '';
+            }
+        }
+
+        selectAsignaturas.addEventListener('change', actualizarBloques);
+        decretoSelect.addEventListener('change', actualizarDecreto);
+        ejeCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', toggleTextarea);
+        });
+
+        actualizarBloques();
+        actualizarDecreto();
+    }());
+</script>
+{% endblock %}

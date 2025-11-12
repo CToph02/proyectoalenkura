@@ -1,0 +1,161 @@
+<h1>{{ page_title }}</h1>
+
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Planes PED creados</h2>
+                <a class="btn btn-primary" href="#formulario-ped">Crear nuevo PED</a>
+            </div>
+
+            {% if planes %}
+            <div class="tabla-wrapper">
+                <table class="tabla-planes">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Decreto</th>
+                            <th>Creado</th>
+                            <th>Asignaturas</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for plan in planes %}
+                        <tr>
+                            <td>#{{ plan.id }}</td>
+                            <td>{{ plan.decreto.nombre }}</td>
+                            <td>{{ plan.creado_en|date:"d/m/Y H:i" }}</td>
+                            <td>{{ plan.plan_asignaturas.all|length }}</td>
+                            <td>
+                                <a class="btn btn-secondary" href="{% url 'ped:plan_pdf' plan.id %}" target="_blank">
+                                    Descargar PDF
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No se han creado planes de evaluación todavía.</p>
+            {% endif %}
+        </section>
+
+        {% if messages %}
+        <div class="alert alert-success">
+            <ul>
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if errors %}
+        <div class="alert alert-error">
+            <ul>
+                {% for error in errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form method="post" id="formulario-ped">
+            {% csrf_token %}
+            <section class="grid grid-two">
+                <div>
+                    <label for="decreto">Decreto</label>
+                    <select id="decreto" name="decreto" required>
+                        <option value="">Selecciona un decreto</option>
+                        {% for decreto in decretos %}
+                        <option value="{{ decreto.id }}" {% if selected_decreto==decreto.id %}selected{% endif %}>
+                            {{ decreto.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="asignaturas">Asignaturas</label>
+                    <select id="asignaturas" name="asignaturas" multiple required>
+                        {% for asignatura in asignaturas %}
+                        <option value="{{ asignatura.id }}" {% if asignatura.id in selected_asignaturas %}selected{%
+                            endif %}>
+                            {{ asignatura.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <small>Selecciona todas las asignaturas que formarán parte del plan.</small>
+                </div>
+            </section>
+
+            <section class="resumen-card">
+                <h2>Decreto seleccionado</h2>
+                <p id="decreto-seleccionado">
+                    {% if selected_decreto %}
+                    {{ decretos|get_decreto_nombre:selected_decreto }}
+                    {% else %}
+                    Aún no seleccionado.
+                    {% endif %}
+                </p>
+            </section>
+
+            <section class="seccion-asignaturas">
+                <h2 class="subtitulo">Detalle por asignatura</h2>
+                <p>Solo se mostrarán las asignaturas seleccionadas en el listado superior.</p>
+                <div id="asignaturas-contenido" class="grid">
+                    {% for asignatura in asignaturas %}
+                    <article class="asignatura-bloque" data-asignatura-id="{{ asignatura.id }}" {% if asignatura.id not
+                        in selected_asignaturas %}hidden{% endif %}>
+                        <h3>{{ asignatura.nombre }}</h3>
+
+                        <div class="grid grid-two">
+                            {% field_name "ejes_" asignatura.id as ejes_checkbox_name %}
+                            <section>
+                                <h4>¿Qué evaluar?</h4>
+                                {% if asignatura.ejes.all %}
+                                {% for eje in asignatura.ejes.all %}
+                                {% field_name "eje_" eje.id as eje_field_name %}
+                                {% checked_option form_values ejes_checkbox_name eje.id as eje_checked %}
+                                <div class="eje-item">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="{{ ejes_checkbox_name }}" value="{{ eje.id }}"
+                                            data-target="{{ eje_field_name }}" {% if eje_checked %}checked{% endif %}>
+                                        {{ eje.nombre }}
+                                    </label>
+                                    <textarea id="{{ eje_field_name }}" name="{{ eje_field_name }}"
+                                        placeholder="Detalla el contenido para este eje." {% if not eje_checked
+                                        %}hidden{% endif %}>{{ form_values|get_value:eje_field_name }}</textarea>
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                <p>No hay ejes asociados a esta asignatura en Core.</p>
+                                {% endif %}
+                            </section>
+
+                            <section>
+                                <h4>¿Cómo evaluar?</h4>
+                                {% field_name "procedimiento_" asignatura.id as procedimiento_name %}
+                                <label for="{{ procedimiento_name }}">Procedimiento</label>
+                                <textarea id="{{ procedimiento_name }}" name="{{ procedimiento_name }}"
+                                    placeholder="Describe los procedimientos para esta asignatura.">{{ form_values|get_value:procedimiento_name }}</textarea>
+
+                                {% field_name "instrumento_" asignatura.id as instrumento_name %}
+                                <label for="{{ instrumento_name }}">Instrumento</label>
+                                <textarea id="{{ instrumento_name }}" name="{{ instrumento_name }}"
+                                    placeholder="Describe los instrumentos a utilizar.">{{ form_values|get_value:instrumento_name }}</textarea>
+                            </section>
+                        </div>
+
+                        <section>
+                            <h4>¿Para qué evaluar?</h4>
+                            {% field_name "objetivo_" asignatura.id as objetivo_name %}
+                            <textarea id="{{ objetivo_name }}" name="{{ objetivo_name }}"
+                                placeholder="Redacta el objetivo para esta asignatura.">{{ form_values|get_value:objetivo_name }}</textarea>
+                        </section>
+                    </article>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <button type="submit">Guardar formulario PED</button>
+        </form>

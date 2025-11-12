@@ -1,29 +1,21 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
-from core.models import DateTime, Student, Subject, Axis
-
-# Create your models here.
-def validate_list_of_strings(value):
-    if not isinstance(value, list):
-        raise ValidationError("Estrategias debe ser una lista.")
-    for i, v in enumerate(value):
-        if not isinstance(v, str) or not v.strip():
-            raise ValidationError(f"Estrategia #{i+1} debe ser un string no vacío.")
+from core.models import DateTime, Asignatura, Eje, Estudiante
 
 class PaciAppModel(DateTime):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='paci_student')
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='paci_subject')
-    axis = models.ForeignKey(Axis, on_delete=models.CASCADE, related_name='paci_axis')
+    student = models.ForeignKey(Estudiante, on_delete=models.CASCADE, related_name='paci_student')
+    subject = models.ForeignKey(Asignatura, on_delete=models.CASCADE, related_name='paci_subject')
+    axis = models.ForeignKey(Eje, on_delete=models.CASCADE, related_name='paci_axis')
     objetivo_general = models.TextField()
     adecuacion_curricular = models.TextField()
 
-    estrategias = models.JSONField(default=list, blank=True, validators=[validate_list_of_strings])
+    estrategias = models.TextField(blank=True)
 
-    puntaje_total = models.SmallIntegerField()
+    puntaje_total = models.SmallIntegerField(null=True, blank=True)
 
     def __str__(self) -> str:
-        return self.name
+        return f'{self.student} - {self.subject} - {self.axis}'
     
     class Meta:
         verbose_name = "Paci App Model"

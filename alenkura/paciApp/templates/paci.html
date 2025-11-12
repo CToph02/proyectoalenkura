@@ -1,0 +1,86 @@
+{% extends 'base.html'%}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Plan de Adecuación Curricular Individual (P.A.C.I.)</h1>
+
+<section class="flex flex-col mb-8 mt-8">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-semibold">P.A.C.I. creados</h2>
+        <a href="#" class="block rounded-lg px-4 py-2 text-sm font-medium text-white 
+        hover:bg-gray-800 hover:text-gray-600 
+        dark:text-white dark:bg-gray-600 dark:hover:bg-gray-700 dark:hover:text-white">
+            Crear nuevo P.A.C.I.
+          </a>
+    </div>
+
+    {% if planes %}
+    <div class="max-h-100 overflow-x-auto rounded border border-gray-300 shadow-sm dark:border-gray-600">
+        <table class="min-w-full divide-y-2 divide-gray-200 dark:divide-gray-700">
+            <thead class="tr:text-left rtl:text-right">
+                <tr class="*:font-medium *:text-gray-900 dark:*:text-white">
+                    <th class="px-3 py-2 whitespace-nowrap">ID</th>
+                    <th class="px-3 py-2 whitespace-nowrap">Decreto</th>
+                    <th class="px-3 py-2 whitespace-nowrap">Creado</th>
+                    <th class="px-3 py-2 whitespace-nowrap">Asignaturas</th>
+                    <th class="px-3 py-2 whitespace-nowrap">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                {% for plan in planes %}
+                <tr class="*:text-gray-900 *:first:font-medium dark:*:text-white">
+                    <td class="px-3 py-2 whitespace-nowrap">#{{ plan.id }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap">{{ plan.decreto.nombre }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap">{{ plan.creado_en|date:"d/m/Y H:i" }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap">{{ plan.plan_asignaturas.count }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap">
+                        <a class="inline-block rounded-sm bg-indigo-600 px-12 py-3 text-white hover:bg-indigo-700" href="{% url 'ped:plan_pdf' plan.id %}" target="_blank">
+                            Descargar PDF
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p>No se han creado P.A.C.I. todavía.</p>
+    {% endif %}
+</section>
+
+<section>
+    <div class="flex flex-col mb-4">
+        <label for="estudiante">Seleccione el Estudiante</label>
+        <select class="p-4 mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+        name="estudiante" id="estudiante">
+            {% for estudiante in estudiantes %}
+            <option value="{{ estudiante.id }}">{{ estudiante.first_name }} {{ estudiante.last_name }}</option>
+            {% empty %}
+                <option value="">No hay estudiantes disponibles</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="flex flex-col mb-4"">
+        <label for="estudiante">Seleccione el Asignatura</label>
+        <select class="p-4 mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+        name="estudiante" id="estudiante">
+            {% for asignatura in asignaturas %}
+            <option value="{{ asignatura.id }}">{{ asignatura.nombre }}</option>
+            {% empty %}
+                <option value="">No hay asignaturas disponibles</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="flex flex-col mb-4"">
+        <label for="estudiante">Seleccione el Eje</label>
+        <select class="p-4 mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+        name="estudiante" id="estudiante">
+            {% for eje in ejes %}
+            <option value="{{ eje.id }}">{{ eje.nombre }}</option>
+            {% empty %}
+                <option value="">No hay ejes disponibles</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+</section>
+{% endblock %}

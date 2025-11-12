@@ -1,10 +1,14 @@
 from django.shortcuts import render
+from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from .models import Indicadores
 
 # Create your views here.
+def index(request):
+    return HttpResponse("Hello, world. You're at the indicadoresApp index.")
+
 class indicadores_list(LoginRequiredMixin, ListView):
     pass
     #model = Indicadores

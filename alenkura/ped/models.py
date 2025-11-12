@@ -9,7 +9,6 @@ class Decreto(models.Model):
     def __str__(self):
         return self.nombre
 
-
 class PlanEvaluacion(models.Model):
     decreto = models.ForeignKey(
         Decreto,

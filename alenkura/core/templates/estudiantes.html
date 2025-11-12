@@ -1,0 +1,42 @@
+{% extends 'base.html'%}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Lista de Estudiantes</h1>
+
+{% if estudiantes %}
+    <div class="max-h-100 overflow-x-auto rounded border border-gray-300 shadow-sm dark:border-gray-600">
+        <table class="min-w-full divide-y-2 divide-gray-200 dark:divide-gray-700">
+            <thead class="tr:text-left rtl:text-right">
+                <tr class="*:font-medium *:text-gray-900 dark:*:text-white">
+                    <th class="text-center px-3 py-2 whitespace-nowrap">RUT</th>
+                    <th class="text-center px-3 py-2 whitespace-nowrap">Nombres</th>
+                    <th class="text-center px-3 py-2 whitespace-nowrap">Apellidos</th>
+                    <th class="text-center px-3 py-2 whitespace-nowrap">Edad</th>
+                    <th class="text-center px-3 py-2 whitespace-nowrap">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                {% for estudiante in estudiantes %}
+                <tr class="*:text-gray-900 *:first:font-medium dark:*:text-white">
+                    <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.rut }}</td>
+                    <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.first_name }}</td>
+                    <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.last_name }}</td>
+                    <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.edad }}</td>
+                    <td class="flex gap-4 justify-center px-3 py-2 whitespace-nowrap">
+                        <a class="inline-block rounded-sm bg-indigo-600 px-12 py-3 text-white hover:bg-indigo-700" href="{% url 'paciApp:paci_list' estudiante.id %}">
+                            Ver P.A.C.I.
+                        </a>
+                        <a class="inline-block rounded-sm bg-indigo-600 px-12 py-3 text-white hover:bg-indigo-700" href="#">
+                            Ver Perfil
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p>No hay estudiantes registrados.</p>
+{% endif %}
+
+{% endblock %}

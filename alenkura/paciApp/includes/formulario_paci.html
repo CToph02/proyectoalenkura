@@ -1,0 +1,29 @@
+<div class="max-h-100 overflow-x-auto rounded border border-gray-300 shadow-sm dark:border-gray-600">
+    <table class="min-w-full divide-y-2 divide-gray-200 dark:divide-gray-700">
+        <thead class="tr:text-left rtl:text-right">
+            <tr class="*:font-medium *:text-gray-900 dark:*:text-white">
+                <th class="px-3 py-2 whitespace-nowrap">ID</th>
+                <th class="px-3 py-2 whitespace-nowrap">Decreto</th>
+                <th class="px-3 py-2 whitespace-nowrap">Creado</th>
+                <th class="px-3 py-2 whitespace-nowrap">Asignaturas</th>
+                <th class="px-3 py-2 whitespace-nowrap">Acciones</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            {% for plan in planes %}
+            <tr class="*:text-gray-900 *:first:font-medium dark:*:text-white">
+                <td class="px-3 py-2 whitespace-nowrap">#{{ plan.id }}</td>
+                <td class="px-3 py-2 whitespace-nowrap">{{ plan.decreto.nombre }}</td>
+                <td class="px-3 py-2 whitespace-nowrap">{{ plan.creado_en|date:"d/m/Y H:i" }}</td>
+                <td class="px-3 py-2 whitespace-nowrap">{{ plan.plan_asignaturas.count }}</td>
+                <td class="px-3 py-2 whitespace-nowrap">
+                    <a class="inline-block rounded-sm bg-indigo-600 px-12 py-3 text-white hover:bg-indigo-700"
+                        href="{% url 'ped:plan_pdf' plan.id %}" target="_blank">
+                        Descargar PDF
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

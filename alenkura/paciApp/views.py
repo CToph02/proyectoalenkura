@@ -12,7 +12,7 @@ def index(request, id):
     objetivo = request.POST.get('objetivo')
     adecuacion = request.POST.get('adecuacion')
     estrategias = request.POST.get('estrategias')
-    indicadores = request.POST.getlist('indicadores')
+    indicadores = request.POST.getlist('nuevo_indicador')
     print(asignatura)
     print(eje)
     print(objetivo)

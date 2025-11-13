@@ -91,6 +91,9 @@ class Estudiante(DateTime):
     def __str__(self) -> str:
         return f'{self.first_name} {self.last_name}'
     
+    def rut_regex(self):
+        pass
+    
     def get_age(self):
         from datetime import date
         today = date.today()

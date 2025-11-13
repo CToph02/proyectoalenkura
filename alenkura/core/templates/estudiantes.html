@@ -23,11 +23,14 @@
                     <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.last_name }}</td>
                     <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.edad }}</td>
                     <td class="flex gap-4 justify-center px-3 py-2 whitespace-nowrap">
-                        <a class="inline-block rounded-sm bg-indigo-600 px-12 py-3 text-white hover:bg-indigo-700" href="{% url 'paciApp:paci_list' estudiante.id %}">
+                        <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" href="{% url 'paciApp:paci_list' estudiante.id %}">
                             Ver P.A.C.I.
                         </a>
-                        <a class="inline-block rounded-sm bg-indigo-600 px-12 py-3 text-white hover:bg-indigo-700" href="#">
-                            Ver Perfil
+                        <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" href="{% url 'paciApp:paci_list' estudiante.id %}">
+                            Agregar P.A.C.I.
+                        </a>
+                        <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" href="#">
+                            Ver Indicadores
                         </a>
                     </td>
                 </tr>

@@ -20,37 +20,9 @@
         </div>
 
         {% if planes %}
-        <div class="max-h-100 overflow-x-auto rounded border border-gray-300 shadow-sm dark:border-gray-600">
-            <table class="min-w-full divide-y-2 divide-gray-200 dark:divide-gray-700">
-                <thead class="tr:text-left rtl:text-right">
-                    <tr class="*:font-medium *:text-gray-900 dark:*:text-white">
-                        <th class="px-3 py-2 whitespace-nowrap">ID</th>
-                        <th class="px-3 py-2 whitespace-nowrap">Decreto</th>
-                        <th class="px-3 py-2 whitespace-nowrap">Creado</th>
-                        <th class="px-3 py-2 whitespace-nowrap">Asignaturas</th>
-                        <th class="px-3 py-2 whitespace-nowrap">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    {% for plan in planes %}
-                    <tr class="*:text-gray-900 *:first:font-medium dark:*:text-white">
-                        <td class="px-3 py-2 whitespace-nowrap">#{{ plan.id }}</td>
-                        <td class="px-3 py-2 whitespace-nowrap">{{ plan.decreto.nombre }}</td>
-                        <td class="px-3 py-2 whitespace-nowrap">{{ plan.creado_en|date:"d/m/Y H:i" }}</td>
-                        <td class="px-3 py-2 whitespace-nowrap">{{ plan.plan_asignaturas.count }}</td>
-                        <td class="px-3 py-2 whitespace-nowrap">
-                            <a class="inline-block rounded-sm bg-indigo-600 px-12 py-3 text-white hover:bg-indigo-700"
-                                href="{% url 'ped:plan_pdf' plan.id %}" target="_blank">
-                                Descargar PDF
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+            {% include './includes/formulario_paci.html' %}
         {% else %}
-        <p>No se ha creado P.A.C.I. todavía para {{ estudiante.first_name }} {{ estudiante.last_name }}</p>
+            <p>No se ha creado P.A.C.I. todavía para {{ estudiante.first_name }} {{ estudiante.last_name }}</p>
         {% endif %}
     </section>
 
@@ -112,6 +84,17 @@
             <ul class="flex gap-4" id="indicadores_lista"></ul>
         </div>
     </section>
+    <template id="tpl-indicador">
+        <li class="w-full flex justify-between items-center border rounded p-2">
+            <span class="truncate"></span>
+            <!-- El name está repetido para formar el array -->
+            <input type="hidden" name="indicadores" />
+            <button type="button"
+                class="rounded bg-gray-200 px-2 py-1 text-sm text-gray-700 hover:bg-red-600 hover:text-white">
+                Eliminar
+            </button>
+        </li>
+    </template>
 
     <section>
         <div class="flex flex-col mb-4 w-full">
@@ -129,6 +112,8 @@
         const nuevoIndicadorInput = document.getElementById('nuevo_indicador');
         const btnNuevoIndicador = document.getElementById('btn_nuevo_indicador');
         const indicadoresLista = document.getElementById('indicadores_lista');
+
+        const tpl = document.getElementById('tpl-indicador');
 
         btnNuevoIndicador.addEventListener('click', function() {
             const indicadorText = nuevoIndicadorInput.value.trim();

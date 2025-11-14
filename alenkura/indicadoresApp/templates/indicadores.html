@@ -1,11 +1,88 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    
-</body>
-</html>
+{% extends 'base.html'%}
+
+{% block content %}
+{% if not indicadores %}
+    <p>No hay paci para este estudiante</p>
+{% endif %}
+<p class="text-3xl mb-4">Indicadores del estudiante: {{paci.student}}</p>
+<form action="">
+    <div class="max-h-100 overflow-x-auto rounded border border-gray-300 shadow-sm dark:border-gray-600 mb-4">
+    <table class="min-w-full divide-y-2 divide-gray-200 dark:divide-gray-700">
+        <thead class="tr:text-left rtl:text-right">
+            <tr class="*:font-medium *:text-gray-900 dark:*:text-white">
+                <th class="text-center px-3 py-2 whitespace-nowrap">Indicador</th>
+                {% for valor in "4321" %}
+                    <th class="text-center px-3 py-2 whitespace-nowrap">{{valor}} puntos</th>
+                {% endfor %}
+                <th class="text-center px-3 py-2 whitespace-nowrap">Logro</th>
+            </tr>
+
+        </thead>
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            {% for indi in indicadores %}
+            <tr class="*:text-gray-900 *:first:font-medium dark:*:text-white">
+                <td class="text-center px-3 py-2 whitespace-nowrap">
+                    {{indi}}
+                </td>
+                {% for valor in "4321" %}
+                <td class="text-center px-3 py-2 whitespace-nowrap">
+                    <input class="peer sr-only" name="indicador_{{indi.id}}" type="radio" id="indicador_{{indi.id}}_{{valor}}" value="{{valor}}">
+                    <label class="w-10 h-10 inline-flex items-center justify-center px-2 py-2 border rounded-md cursor-pointer peer-checked:bg-gray-800 peer-checked:text-white peer-checked:border-gray-800 hover:bg-gray-700" for="indicador_{{indi.id}}_{{valor}}">
+                        {{valor}}
+                    </label>
+                </td>
+                {% endfor %}
+                <td class="text-center px-3 py-2 whitespace-nowrap" id="logro_{{indi.id}}"></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="flex justify-between">
+    <p id="total" class="mt-4 font-semibold"></p>
+    <button class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" type="submit">Guardar</button>
+</div>
+</form>
+<script>
+    // Nombres únicos de todos los grupos de radios
+    const groups = [...new Set(
+      Array.from(document.querySelectorAll('input[type=radio]'), r => r.name)
+    )];
+
+    // Convierte name="indicador4" -> id de celda "logro4"
+    function logroIdFromName(name) {
+      const sufijo = (name.match(/\d+$/) || [null])[0];
+      return sufijo ? `logro_${sufijo}` : `logro_${name}`;
+    }
+
+    function updateScores() {
+      let total = 0;
+
+      for (const name of groups) {
+        const checked = document.querySelector(
+          `input[type=radio][name="${CSS.escape(name)}"]:checked`
+        );
+        const value = checked ? parseInt(checked.value, 10) : 0;
+
+        const texto = value == 4 ? 'logrado' : 'no logrado';
+
+        // Escribe en la celda correspondiente a ese grupo (logroX)
+        const cell = document.getElementById(logroIdFromName(name));
+        if (cell) cell.textContent = texto;
+
+        // Suma al total
+        if (Number.isFinite(value)) total += value;
+      }
+
+      document.getElementById('total').textContent = `Puntaje Total: ${total}`;
+    }
+
+    // Recalcular al cambiar cualquier radio
+    document.addEventListener('change', (e) => {
+      if (e.target.matches('input[type=radio]')) updateScores();
+    });
+
+    // Cálculo inicial
+    updateScores();
+  </script>
+{% endblock %}

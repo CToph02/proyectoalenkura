@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Asignatura, Eje, Contenido, Curso, Apoderado, Estudiante
+from .models import Asignatura, Eje, Contenido, Curso, Apoderado, Estudiante, Sala
 
 admin.site.register(Asignatura)
 admin.site.register(Eje)
@@ -7,3 +7,4 @@ admin.site.register(Contenido)
 admin.site.register(Curso)
 admin.site.register(Apoderado)
 admin.site.register(Estudiante)
+admin.site.register(Sala)

@@ -1,4 +1,5 @@
 from django.db import models
+from accounts.models import User
 
 class DateTime(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -42,10 +43,17 @@ class Nivel(models.TextChoices):
     BASIC = 'BASICO', 'Básico'
     LABORAL = 'LABORAL', 'Laboral'
 
+class Sala(models.Model):
+    nombre_sala = models.CharField(max_length=50, null=False)
+    teachers = models.ForeignKey(User, on_delete=models.CASCADE, related_name='profesor', blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.nombre_sala}'
+
 class Curso(DateTime):
     level = models.CharField(max_length=10, choices=Nivel.choices, default=Nivel.BASIC)
     name = models.CharField(max_length=25)
-    teachers = models.ManyToManyField('accounts.User', related_name='courses', blank=True)
+    sala_id = models.ForeignKey(Sala, on_delete=models.CASCADE, related_name='sala', null=True)
 
     def __str__(self) -> str:
         return f'{self.name} - {self.created_at.year}'

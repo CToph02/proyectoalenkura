@@ -1,27 +1,39 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.urls import reverse_lazy
+from django.db import transaction
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from core.models import Estudiante, Asignatura, Eje, Contenido
+from indicadoresApp.models import Indicadores
+from accounts.models import User
+from .models import PaciAppModel
 
 # Create your views here.
 def index(request, id):
-    asignatura = request.POST.get('asignatura')
-    eje = request.POST.get('eje')
-    objetivo = request.POST.get('objetivo')
-    adecuacion = request.POST.get('adecuacion')
-    estrategias = request.POST.get('estrategias')
-    indicadores = request.POST.getlist('nuevo_indicador')
-    print(asignatura)
-    print(eje)
-    print(objetivo)
-    print(adecuacion)
-    print(estrategias)
-    print(indicadores)
-    estudiante = Estudiante.objects.get(id=id)
+    if request.method == 'POST':
+        asignatura_id = request.POST.get('asignatura')
+        indicadores_lista = request.POST.getlist('indicadores_lista')
+
+        with transaction.atomic():
+            paci = PaciAppModel.objects.create(
+                profesor = request.user,
+                student=Estudiante.objects.get(pk=id),
+                subject=Asignatura.objects.get(pk=asignatura_id),
+                axis=request.POST.get('eje'),
+                objetivo_general=request.POST.get('objetivo'),
+                adecuacion_curricular=request.POST.get('adecuacion'),
+                estrategias=request.POST.get('estrategias')
+            )
+            for indicador in indicadores_lista:
+                Indicadores.objects.create(
+                    indicador=indicador,
+                    #puntaje=adecuacion,
+                    #puntaje_obtenido=2,
+                    paci=paci
+                )
     context = {
-        'estudiante': estudiante,
+        'estudiante': Estudiante.objects.get(id=id),
         'asignaturas': Asignatura.objects.all(),
         'ejes': Eje.objects.all(),
         'contenidos': Contenido.objects.all(),

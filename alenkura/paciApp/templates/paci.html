@@ -33,9 +33,9 @@
                 class="p-4 mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                 name="asignatura" id="asignatura">
                 {% for asignatura in asignaturas %}
-                <option name="asignatura" value="{{ asignatura.nombre }}">{{ asignatura.nombre }}</option>
+                    <option value="{{ asignatura.id }}">{{ asignatura.nombre }}</option>
                 {% empty %}
-                <option value="">No hay asignaturas disponibles</option>
+                    <option>No hay asignaturas disponibles</option>
                 {% endfor %}
             </select>
         </div>
@@ -43,11 +43,11 @@
             <label for="eje">Seleccione el Eje</label>
             <select
                 class="p-4 mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                name="eje" id="eje">
+                name="eje" id="eje" multiple>
                 {% for eje in ejes %}
-                <option name="eje" value="{{ eje.nombre }}">{{ eje.nombre }}</option>
+                <option name="eje" value="{{ eje.nombre }}" id="{{eje.id}}">{{ eje.nombre }}</option>
                 {% empty %}
-                <option value="">No hay ejes disponibles</option>
+                <option>No hay ejes disponibles</option>
                 {% endfor %}
             </select>
         </div>
@@ -56,16 +56,12 @@
 
     <section class="flex gap-8 w-full">
         <div class="flex flex-col mb-4 w-full">
-            <label for="contenido">Ingrese Objetico General</label>
-            <textarea class="border rounded p-2 h-25" name="objetivo" id="objetivo">
-
-        </textarea>
+            <label for="contenido">Ingrese Objetivo General</label>
+            <textarea class="border rounded p-2 h-25" name="objetivo" id="objetivo"></textarea>
         </div>
         <div class="flex flex-col mb-4 w-full">
             <label for="contenido">Ingrese Adecuación curricular</label>
-            <textarea class="border rounded p-2 h-25" name="adecuacion" id="adecuacion">
-
-        </textarea>
+            <textarea class="border rounded p-2 h-25" name="adecuacion" id="adecuacion"></textarea>
         </div>
     </section>
 
@@ -73,7 +69,7 @@
         <label for="indicadores">Agregue indicadores</label>
         <div>
             <div class="flex gap-4 h-10 mb-4">
-                <input id="nuevo_indicador" type="text" class="border rounded p-2 w-full" placeholder="Ingrece indicador">
+                <input id="nuevo_indicador" type="text" class="border rounded p-2 w-full" placeholder="Ingrese indicador">
                 <button id="btn_nuevo_indicador" class="flex items-center text-center rounded bg-indigo-600 p-4 w-60 gap-4 text-white hover:bg-indigo-700" type="button">
                     Agregar indicador
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -81,20 +77,9 @@
                     </svg>
                 </button>
             </div>
-            <ul class="flex gap-4" id="indicadores_lista"></ul>
+            <ul class="flex flex-col gap-4" id="indicadores_lista" name="indicadores_lista"></ul>
         </div>
     </section>
-    <template id="tpl-indicador">
-        <li class="w-full flex justify-between items-center border rounded p-2">
-            <span class="truncate"></span>
-            <!-- El name está repetido para formar el array -->
-            <input type="hidden" name="indicadores" />
-            <button type="button"
-                class="rounded bg-gray-200 px-2 py-1 text-sm text-gray-700 hover:bg-red-600 hover:text-white">
-                Eliminar
-            </button>
-        </li>
-    </template>
 
     <section>
         <div class="flex flex-col mb-4 w-full">
@@ -106,43 +91,71 @@
 
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    (function() {
         const asignaturaSelect = document.getElementById('asignatura');
         const ejeSelect = document.getElementById('eje');
         const nuevoIndicadorInput = document.getElementById('nuevo_indicador');
         const btnNuevoIndicador = document.getElementById('btn_nuevo_indicador');
         const indicadoresLista = document.getElementById('indicadores_lista');
 
-        const tpl = document.getElementById('tpl-indicador');
+        let counter_indicador = 0;
 
-        btnNuevoIndicador.addEventListener('click', function() {
+        function agregar_indicador(){
             const indicadorText = nuevoIndicadorInput.value.trim();
             
-            if (indicadorText !== '') {
-                const li = document.createElement('li');
-                const btn = document.createElement('button');
-                li.className = 'w-full flex justify-between items-center border rounded p-2';
-                li.textContent = indicadorText;
-                li.nodeName = 'indicadores'
-                btn.textContent = 'Eliminar';
-                btn.type = 'button';
-                btn.className = 'rounded bg-gray-700 text-red-600 p-2 hover:text-red-800';
-                btn.addEventListener('click', function() {
-                    indicadoresLista.removeChild(li);
-                    indicadoresLista.removeChild(btn);
-                });
-                indicadoresLista.appendChild(li);
-                indicadoresLista.appendChild(btn);
-                nuevoIndicadorInput.value = '';
-            }else {
+            if (indicadorText == '') {
                 alert('Por favor, ingrese un indicador válido.');
+                return;
+            }
+            const li = document.createElement('li');
+            const btn = document.createElement('button');
+            const input_hidden = document.createElement('input');
+            const indicador_span = document.createElement('span');
+            const counter = document.createElement('p');
+            counter_indicador += 1;
+            counter.textContent = `indicador: ${counter_indicador}` 
+
+            input_hidden.name = 'indicadores_lista';
+            input_hidden.type = 'hidden';
+            input_hidden.value = indicadorText;
+
+            li.className = 'w-full flex justify-between items-center border rounded p-2';
+            indicador_span.textContent = indicadorText;
+            
+
+            btn.textContent = 'Eliminar';
+            btn.type = 'button';
+            btn.className = 'rounded bg-gray-700 text-red-600 p-2 hover:text-red-800';
+            btn.addEventListener('click', function() {
+                li.remove();
+            });
+
+            li.appendChild(counter);
+            li.appendChild(indicador_span);
+            li.appendChild(btn);
+            li.appendChild(input_hidden);
+
+            indicadoresLista.prepend(li);
+            nuevoIndicadorInput.value = '';
+            
+        };
+
+        btnNuevoIndicador.addEventListener('click', agregar_indicador);
+
+        nuevoIndicadorInput.addEventListener('keydown', (e) =>{
+            if (e.key == 'Enter'){
+                e.preventDefault();
+                agregar_indicador();
             }
         });
-        asignaturaSelect.addEventListener('change', function() {
-            const selectedAsignaturaId = this.value;
-            const eje = 
-            console.log(selectedAsignaturaId);
-        });
-    });
+
+        // asignaturaSelect.addEventListener('change', function() {
+        //     const selectedAsignaturaId = this.value;
+        //     const eje = 
+        //     console.log(selectedAsignaturaId);
+        // });
+        
+    })();
+
 </script>
 {% endblock %}

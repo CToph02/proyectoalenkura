@@ -2,15 +2,11 @@ from django.db import models
 from paciApp.models import PaciAppModel
 
 from core.models import Estudiante, Asignatura
-from accounts.models import User
+
 
 # Create your models here.
 class Indicadores(models.Model):
-    profesor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='profesor')
-    estudiante = models.ForeignKey(Estudiante, on_delete=models.CASCADE, related_name='estudiante')
-    asignatura = models.ForeignKey(Asignatura, on_delete=models.CASCADE, related_name='asignatura')
-
-    indicador = models.CharField(max_length=150)
+    indicador = models.CharField(max_length=150, null=True)
     puntaje = models.SmallIntegerField(null=True, blank=True)
     puntaje_obtenido = models.SmallIntegerField(null=True, blank=True)
     

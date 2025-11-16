@@ -1,5 +1,6 @@
 from django.db import models
 from accounts.models import User
+import re
 
 class DateTime(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -100,7 +101,8 @@ class Estudiante(DateTime):
         return f'{self.first_name} {self.last_name}'
     
     def rut_regex(self):
-        pass
+        rut_reg = re.compile(r'^d\{1,2}.?d\{3}.?d\{3}-[\dkK]$')
+        return rut_reg
     
     def get_age(self):
         from datetime import date

@@ -20,7 +20,7 @@ def index(request, id):
                 profesor = request.user,
                 student=Estudiante.objects.get(pk=id),
                 subject=Asignatura.objects.get(pk=asignatura_id),
-                axis=request.POST.get('eje'),
+                axis=request.POST.getlist('eje'),
                 objetivo_general=request.POST.get('objetivo'),
                 adecuacion_curricular=request.POST.get('adecuacion'),
                 estrategias=request.POST.get('estrategias')
@@ -28,8 +28,6 @@ def index(request, id):
             for indicador in indicadores_lista:
                 Indicadores.objects.create(
                     indicador=indicador,
-                    #puntaje=adecuacion,
-                    #puntaje_obtenido=2,
                     paci=paci
                 )
     context = {

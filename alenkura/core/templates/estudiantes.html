@@ -23,20 +23,25 @@
                     <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.last_name }}</td>
                     <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.edad }}</td>
                     <td class="flex gap-4 justify-center px-3 py-2 whitespace-nowrap">
+                        {% if estudiante.tiene_paci %}
                         <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" href="{% url 'paciApp:paci_list' estudiante.id %}">
                             Ver P.A.C.I.
                         </a>
+                        {% else %}
                         <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" href="{% url 'paciApp:paci_list' estudiante.id %}">
                             Agregar P.A.C.I.
                         </a>
+                        {% endif %}
+                        {% if estudiante.tiene_indicadores %}
                         <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" href="{% url 'indicadoresApp:indicadores_list' estudiante.id %}">
                             Ver Indicadores
                         </a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
-        </table>
+        </table>        
     </div>
 {% else %}
     <p>No hay estudiantes registrados.</p>

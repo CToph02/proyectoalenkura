@@ -10,7 +10,6 @@ from paciApp.models import PaciAppModel
 def index(request, id):
     paci = get_object_or_404(PaciAppModel, student_id=id)
     indicador = Indicadores.objects.filter(paci=paci)
-    print(indicador)
     context = {
         'paci': paci,
         'indicadores': indicador

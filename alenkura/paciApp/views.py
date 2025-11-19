@@ -5,7 +5,7 @@ from django.db import transaction
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from core.models import Estudiante, Asignatura, Eje, Contenido
-from indicadoresApp.models import Indicadores
+from instrumentosApp.models import Indicadores
 from accounts.models import User
 from .models import PaciAppModel
 

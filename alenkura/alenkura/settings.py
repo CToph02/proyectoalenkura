@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'accounts',
     'paciApp',
     'indicadoresApp',
+    'instrumentosApp',
     'core',
     'ped',
 ]

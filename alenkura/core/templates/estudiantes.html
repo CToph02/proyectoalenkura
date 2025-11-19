@@ -33,8 +33,8 @@
                         </a>
                         {% endif %}
                         {% if estudiante.tiene_indicadores %}
-                        <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" href="{% url 'indicadoresApp:indicadores_list' estudiante.id %}">
-                            Ver Indicadores
+                        <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" href="{% url 'instrumentosApp:instrumentos_list' estudiante.id %}">
+                            Ver Indicadores de logro
                         </a>
                         {% endif %}
                     </td>

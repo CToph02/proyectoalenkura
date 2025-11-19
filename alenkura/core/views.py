@@ -4,7 +4,7 @@ from django.db.models import Exists, OuterRef
 
 from .models import Estudiante
 from paciApp.models import PaciAppModel
-from indicadoresApp.models import Indicadores
+from instrumentosApp.models import Indicadores
 
 # Create your views here.
 def estudiantes_view(request):
@@ -12,18 +12,18 @@ def estudiantes_view(request):
         tiene_paci=Exists(
             PaciAppModel.objects.filter(student=OuterRef('pk'))
         ),
-        tiene_indicadores=Exists(
-            Indicadores.objects.filter(paci__student=OuterRef('pk'))
-        )
+        # tiene_indicadores=Exists(
+        #     Indicadores.objects.filter(paci__student=OuterRef('pk'))
+        # )
     )
-    estudiante_id = request.GET.get('estudiante_id')
+    #estudiante_id = request.GET.get('estudiante_id')
 
-    paci = PaciAppModel.objects.filter(student__in=estudiantes)
-    indicadores = Indicadores.objects.filter(paci__in=paci)
+    #paci = PaciAppModel.objects.filter(student__in=estudiantes)
+    #indicadores = Indicadores.objects.filter(paci__in=paci)
     context = {
         'estudiantes': estudiantes,
-        'paci': paci,
-        'indicadores': indicadores
+        #'paci': paci,
+        #'indicadores': indicadores
     }
     return render(request, 'estudiantes.html', context)
 

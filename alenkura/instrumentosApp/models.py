@@ -10,7 +10,7 @@ class Indicadores(models.Model):
     puntaje = models.SmallIntegerField(null=True, blank=True)
     puntaje_obtenido = models.SmallIntegerField(null=True, blank=True)
     
-    paci = models.ForeignKey(PaciAppModel, on_delete=models.CASCADE, related_name='paci', null=True, blank=True)
+    asignatura = models.ForeignKey(Asignatura, on_delete=models.CASCADE, related_name='paci', null=True, blank=True)
 
     def __str__(self) -> str:
         return f'{self.indicador}'

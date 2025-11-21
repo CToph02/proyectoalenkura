@@ -5,8 +5,6 @@ app_name = 'paciApp'
 
 urlpatterns = [
     path('<int:id>', index, name='paci_list'),
-    path('indicadores/', include('indicadoresApp.urls')),
     path('create/<int:id>', paci_create.as_view(), name='paci_create'),
     path('edit/<int:pk>/', paci_edit.as_view(), name='paci_edit'),
-    path('delete/<int:pk>/', paci_delete.as_view(), name='paci_delete'),
 ]

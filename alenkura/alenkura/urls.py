@@ -23,7 +23,6 @@ urlpatterns = [
     path('core/', include('core.urls')),
     path('ped/', include('ped.urls')),
     path('paci/', include('paciApp.urls')),
-    path('core/', include('core.urls')),
     path('indicadores/', include('indicadoresApp.urls')),
     path('instrumentos/', include('instrumentosApp.urls'))
 ]

@@ -13,11 +13,16 @@ class PaciAppModel(DateTime):
 
     estrategias = models.TextField(blank=True)
 
-    puntaje_total = models.SmallIntegerField(null=True)
-
     def __str__(self) -> str:
         return f'{self.student} - {self.subject} - {self.axis}'
     
     class Meta:
         verbose_name = "Paci App Model"
         verbose_name_plural = "Paci App Models"
+
+class indicadores(models.Model):
+    indicador = models.CharField(max_length=150, null=True)
+    paci = models.ForeignKey(PaciAppModel, on_delete=models.CASCADE, related_name='paci')
+
+    def __str__(self) -> str:
+        return f'{self.indicador}'

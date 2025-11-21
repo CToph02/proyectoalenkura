@@ -4,9 +4,10 @@ from django.db.models import Exists, OuterRef
 
 from .models import Estudiante
 from paciApp.models import PaciAppModel
-from instrumentosApp.models import Indicadores
 
-# Create your views here.
+def index(request):
+    return render(request, 'index.html')
+
 def estudiantes_view(request):
     estudiantes = Estudiante.objects.all().annotate(
         tiene_paci=Exists(

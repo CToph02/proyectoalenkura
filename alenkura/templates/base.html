@@ -57,7 +57,7 @@
             <ul class="mt-2 space-y-1 px-4">
 
               <li>
-                <a href="{% url 'core:estudiantes' %}"
+                <a href="{% url 'coreApp:estudiantes' %}"
                   class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200">
                   Estudiantes
                 </a>
@@ -104,25 +104,12 @@
             </summary>
 
             <ul class="mt-2 space-y-1 px-4">
-              <li>
-                <a href="#"
-                  class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200">
-                  Details
-                </a>
-              </li>
 
               <li>
-                <a href="#"
-                  class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200">
-                  Security
-                </a>
-              </li>
-
-              <li>
-                <form action="#">
+                <form action="{% url 'accounts:logout' %}">
                   <button type="submit"
                     class="w-full rounded-lg px-4 py-2 [text-align:_inherit] text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200">
-                    Logout
+                    Cerrar sesión
                   </button>
                 </form>
               </li>

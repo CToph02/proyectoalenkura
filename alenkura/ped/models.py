@@ -1,6 +1,6 @@
 from django.db import models
 
-from core.models import Asignatura, Eje
+from core.models import Asignatura, Curso, Eje
 
 
 class Decreto(models.Model):
@@ -14,6 +14,13 @@ class PlanEvaluacion(models.Model):
         Decreto,
         on_delete=models.PROTECT,
         related_name='planes'
+    )
+    curso = models.ForeignKey(
+        Curso,
+        on_delete=models.PROTECT,
+        related_name='planes_evaluacion',
+        null=True,
+        blank=True
     )
     objetivo_general = models.TextField(blank=True)
     creado_en = models.DateTimeField(auto_now_add=True)

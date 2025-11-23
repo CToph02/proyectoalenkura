@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% load ped_extras %}
 {% block content %}
-<h1 class="text-3xl font-semibold">{{ page_title }}</h1>
+<h1 class="mb-4 text-2xl font-bold text-gray-900 dark:text-white">{{ page_title }}</h1>
 
 {% if messages %}
-<div class="alert alert-success">
-    <ul>
+<div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 dark:border-emerald-500/50 dark:bg-emerald-900/40 dark:text-emerald-100">
+    <ul class="list-disc space-y-1 pl-5">
         {% for message in messages %}
         <li>{{ message }}</li>
         {% endfor %}
@@ -14,8 +14,8 @@
 {% endif %}
 
 {% if errors %}
-<div class="alert alert-error">
-    <ul>
+<div class="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-4 text-rose-900 dark:border-rose-500/50 dark:bg-rose-900/40 dark:text-rose-100">
+    <ul class="list-disc space-y-1 pl-5">
         {% for error in errors %}
         <li>{{ error }}</li>
         {% endfor %}
@@ -23,39 +23,192 @@
 </div>
 {% endif %}
 
-<section class="flex flex-col mb-8 mt-8">
-    <div class="flex items-center justify-between mb-4">
-        <h2 class="text-2xl font-semibold">Planes PED creados</h2>
-        <a href="#" class="block rounded-lg px-4 py-2 text-sm font-medium text-white 
-        hover:bg-gray-800 hover:text-gray-600 
-        dark:text-white dark:bg-gray-600 dark:hover:bg-gray-700 dark:hover:text-white">
+<section class="mt-8 flex flex-col">
+    <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">Crear nuevo PED</h2>
+        <button type="button" id="toggle-formulario" class="block rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-700">
             Crear nuevo PED
-          </a>
+        </button>
     </div>
+</section>
+
+<div id="formulario-container" class="mt-8" {% if not form_expanded %}hidden{% endif %}>
+<form method="post" id="formulario-ped" class="space-y-8">
+    {% csrf_token %}
+    <section class="grid gap-6 lg:grid-cols-3">
+        <div class="flex flex-col">
+            <label class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-200" for="decreto">Decreto</label>
+            <select
+                class="w-full rounded border border-gray-300 bg-white p-4 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                id="decreto" name="decreto" required>
+                <option value="">Selecciona un decreto</option>
+                {% for decreto in decretos %}
+                <option value="{{ decreto.id }}" {% if selected_decreto == decreto.id %}selected{% endif %}>
+                    {{ decreto.nombre }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="flex flex-col">
+            <label class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-200" for="curso">Curso</label>
+            <select
+                class="w-full rounded border border-gray-300 bg-white p-4 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                id="curso" name="curso" required>
+                <option value="">Selecciona un curso</option>
+                {% for curso in cursos %}
+                <option value="{{ curso.id }}" {% if selected_curso == curso.id %}selected{% endif %}>
+                    {{ curso.name }} ({{ curso.get_level_display }})
+                </option>
+                {% empty %}
+                <option value="">No hay cursos disponibles</option>
+                {% endfor %}
+            </select>
+            <small class="mt-2 text-xs text-gray-500 dark:text-gray-300">Se utilizará el nivel del curso para el PDF.</small>
+        </div>
+        <div class="flex flex-col">
+            <label class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-200" for="asignaturas">Asignaturas</label>
+            <select
+                class="w-full rounded border border-gray-300 bg-white p-4 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                id="asignaturas" name="asignaturas" multiple required>
+                {% for asignatura in asignaturas %}
+                <option value="{{ asignatura.id }}" {% if asignatura.id in selected_asignaturas %}selected{% endif %}>
+                    {{ asignatura.nombre }}
+                </option>
+                {% endfor %}
+            </select>
+            <small class="mt-2 text-xs text-gray-500 dark:text-gray-300">Selecciona todas las asignaturas que formarán parte del plan.</small>
+        </div>
+    </section>
+
+    <section class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Decreto seleccionado</h3>
+        <p id="decreto-seleccionado" class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+            {% if selected_decreto %}
+            {{ decretos|get_decreto_nombre:selected_decreto }}
+            {% else %}
+            Aún no seleccionado.
+            {% endif %}
+        </p>
+    </section>
+
+    <section>
+        <div class="mb-4">
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">Detalle por asignatura</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">Solo se mostrarán las asignaturas seleccionadas en el listado superior.</p>
+        </div>
+        <div id="asignaturas-contenido" class="space-y-6">
+            {% for asignatura in asignaturas %}
+            <article class="space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900" data-asignatura-id="{{ asignatura.id }}" {% if asignatura.id not in selected_asignaturas %}hidden{% endif %}>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ asignatura.nombre }}</h3>
+
+                <div class="grid gap-6 lg:grid-cols-2">
+                    {% field_name "ejes_" asignatura.id as ejes_checkbox_name %}
+                    <section class="space-y-4">
+                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white">¿Qué evaluar?</h4>
+                        {% if asignatura.ejes.all %}
+                        {% for eje in asignatura.ejes.all %}
+                        {% field_name "eje_" eje.id as eje_field_name %}
+                        {% checked_option form_values ejes_checkbox_name eje.id as eje_checked %}
+                        <div class="rounded border border-gray-200 p-4 dark:border-gray-700">
+                            <label class="flex items-center gap-3 text-sm font-medium text-gray-900 dark:text-white">
+                                <input type="checkbox" class="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" name="{{ ejes_checkbox_name }}" value="{{ eje.id }}"
+                                    data-target="{{ eje_field_name }}" {% if eje_checked %}checked{% endif %}>
+                                {{ eje.nombre }}
+                            </label>
+                            <textarea class="mt-3 w-full rounded border border-gray-300 p-3 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-950 dark:text-white"
+                                id="{{ eje_field_name }}" name="{{ eje_field_name }}" placeholder="Detalla el contenido para este eje." {% if not eje_checked %}hidden{% endif %}>{{ form_values|get_value:eje_field_name }}</textarea>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p class="text-sm text-gray-600 dark:text-gray-300">No hay ejes asociados a esta asignatura en Core.</p>
+                        {% endif %}
+                    </section>
+
+                    <section class="space-y-4">
+                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white">¿Cómo evaluar?</h4>
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <div class="flex flex-col">
+                                {% field_name "procedimiento_" asignatura.id as procedimiento_name %}
+                                <label class="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200" for="{{ procedimiento_name }}">Procedimiento</label>
+                                <textarea class="w-full rounded border border-gray-300 p-3 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-950 dark:text-white"
+                                    id="{{ procedimiento_name }}" name="{{ procedimiento_name }}" placeholder="Describe los procedimientos para esta asignatura.">{{ form_values|get_value:procedimiento_name }}</textarea>
+                            </div>
+                            <div class="flex flex-col">
+                                {% field_name "instrumento_" asignatura.id as instrumento_name %}
+                                <label class="mb-1 text-sm font-medium text-gray-700 dark:text-gray-200" for="{{ instrumento_name }}">Instrumento</label>
+                                <textarea class="w-full rounded border border-gray-300 p-3 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-950 dark:text-white"
+                                    id="{{ instrumento_name }}" name="{{ instrumento_name }}" placeholder="Describe los instrumentos a utilizar.">{{ form_values|get_value:instrumento_name }}</textarea>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <section>
+                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">¿Para qué evaluar?</h4>
+                    {% field_name "objetivo_" asignatura.id as objetivo_name %}
+                    <textarea class="mt-2 h-32 w-full rounded border border-gray-300 p-3 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-950 dark:text-white"
+                        id="{{ objetivo_name }}" name="{{ objetivo_name }}" placeholder="Redacta el objetivo para esta asignatura.">{{ form_values|get_value:objetivo_name }}</textarea>
+                </section>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <button class="inline-block rounded-sm bg-indigo-600 px-12 py-3 text-white hover:bg-indigo-700" type="submit">
+        Guardar formulario PED
+    </button>
+</form>
+</div>
+
+<section class="mt-12 flex flex-col">
+    <h2 class="mb-4 text-2xl font-semibold text-gray-900 dark:text-white">Planes PED creados</h2>
 
     {% if planes %}
     <div class="max-h-100 overflow-x-auto rounded border border-gray-300 shadow-sm dark:border-gray-600">
         <table class="min-w-full divide-y-2 divide-gray-200 dark:divide-gray-700">
-            <thead class="tr:text-left rtl:text-right">
+            <thead class="text-left">
                 <tr class="*:font-medium *:text-gray-900 dark:*:text-white">
-                    <th class="text-center px-3 py-2 whitespace-nowrap">ID</th>
-                    <th class="text-center px-3 py-2 whitespace-nowrap">Decreto</th>
-                    <th class="text-center px-3 py-2 whitespace-nowrap">Creado</th>
-                    <th class="text-center px-3 py-2 whitespace-nowrap">Asignaturas</th>
-                    <th class="text-center px-3 py-2 whitespace-nowrap">Acciones</th>
+                    <th class="px-3 py-2 whitespace-nowrap">ID</th>
+                    <th class="px-3 py-2 whitespace-nowrap">Decreto</th>
+                    <th class="px-3 py-2 whitespace-nowrap">Curso</th>
+                    <th class="px-3 py-2 whitespace-nowrap">Creado</th>
+                    <th class="px-3 py-2 whitespace-nowrap">Asignaturas</th>
+                    <th class="px-3 py-2 whitespace-nowrap">Acciones</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                 {% for plan in planes %}
                 <tr class="*:text-gray-900 *:first:font-medium dark:*:text-white">
-                    <td class="text-center px-3 py-2 whitespace-nowrap">#{{ plan.id }}</td>
-                    <td class="text-center px-3 py-2 whitespace-nowrap">{{ plan.decreto.nombre }}</td>
-                    <td class="text-center px-3 py-2 whitespace-nowrap">{{ plan.creado_en|date:"d/m/Y H:i" }}</td>
-                    <td class="text-center py-2 whitespace-nowrap">{{ plan.plan_asignaturas.count }}</td>
-                    <td class="flex gap-4 justify-center py-2 whitespace-nowrap">
-                        <a class="inline-block rounded-sm bg-indigo-600 px-12 py-3 text-white hover:bg-indigo-700" href="{% url 'ped:plan_pdf' plan.id %}" target="_blank">
-                            Descargar PDF
-                        </a>
+                    <td class="px-3 py-2 whitespace-nowrap">#{{ plan.id }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap">{{ plan.decreto.nombre }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap">
+                        {% if plan.curso %}
+                            {{ plan.curso.name }} ({{ plan.curso.get_level_display }})
+                        {% else %}
+                            Sin curso
+                        {% endif %}
+                    </td>
+                    <td class="px-3 py-2 whitespace-nowrap">{{ plan.creado_en|date:"d/m/Y H:i" }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap">{{ plan.plan_asignaturas.count }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap">
+                        <div class="flex flex-wrap gap-2">
+                            <a class="inline-block rounded-sm bg-slate-600 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-700"
+                                href="{% url 'ped:plan_pdf' plan.id %}" target="_blank" rel="noopener">
+                                Ver
+                            </a>
+                            <a class="inline-block rounded-sm bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700"
+                                href="{% url 'ped:plan_pdf' plan.id %}" download>
+                                Descargar
+                            </a>
+                            <form method="post" action="{% url 'ped:plan_eliminar' plan.id %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit"
+                                    class="inline-flex items-center rounded-sm bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-700"
+                                    onclick="return confirm('¿Seguro que deseas eliminar el Plan #{{ plan.id }}?');">
+                                    Eliminar
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -63,109 +216,9 @@
         </table>
     </div>
     {% else %}
-        <p>No se han creado planes de evaluación todavía.</p>
+    <p class="text-sm text-gray-600 dark:text-gray-300">No se han creado planes de evaluación todavía.</p>
     {% endif %}
 </section>
-
-<form method="post" id="formulario-ped">
-    {% csrf_token %}
-    <section class="flex gap-8 mb-8">
-        <div class="flex flex-col w-150">
-            <label class="mb-4 text-2xl" for="decreto">Decreto</label>
-            <select
-                class="p-4 mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                id="decreto" name="decreto" required>
-                <option value="">Selecciona un decreto</option>
-                {% for decreto in decretos %}
-                <option value="{{ decreto.id }}" {% if selected_decreto == decreto.id %} selected {% endif %}>
-                    {{ decreto.nombre }}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="flex flex-col w-150">
-            <label class="mb-4 text-2xl" for="asignaturas">Asignaturas</label>
-            <select
-                class="p-4 mb-4 mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                id="asignaturas" name="asignaturas" multiple required>
-                {% for asignatura in asignaturas %}
-                <option value="{{ asignatura.id }}" {% if asignatura.id in selected_asignaturas %} selected {% endif %}>
-                    {{ asignatura.nombre }}
-                </option>
-                {% endfor %}
-            </select>
-            <small>Selecciona todas las asignaturas que formarán parte del plan.</small>
-        </div>
-    </section>
-    <div class="mb-4">
-        <h2 class="mb-4 text-2xl">Detalle por asignatura</h2>
-        <p class="mb-4">Solo se mostrarán las asignaturas seleccionadas en el listado superior.</p>
-        <div id="asignaturas-contenido" class="grid grid-cols-2 gap-4">
-            {% for asignatura in asignaturas %}
-            <article class="bg-gray-700 rounded p-4" data-asignatura-id="{{ asignatura.id }}" {% if asignatura.id not in selected_asignaturas %} hidden {% endif %}>
-                <h3 class="text-xl mb-4">{{ asignatura.nombre }}</h3>
-    
-                <div class="grid">
-                    {% field_name "ejes_" asignatura.id as ejes_checkbox_name %}
-                    <section>
-                        <h4 class="text-xl mb-4">¿Qué evaluar?</h4>
-                        {% if asignatura.ejes.all %}
-                            {% for eje in asignatura.ejes.all %}
-                                {% field_name "eje_" eje.id as eje_field_name %}
-                                {% checked_option form_values ejes_checkbox_name eje.id as eje_checked %}
-                                <div class="flex flex-col justify-center bg-gray-600 p-2 mb-4 gap-2 rounded">
-                                    <label>
-                                        <input class="size-5 rounded border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-900 dark:ring-offset-gray-900 dark:checked:bg-blue-600"
-                                            type="checkbox" name="{{ ejes_checkbox_name }}" value="{{ eje.id }}"
-                                            data-target="{{ eje_field_name }}" {% if eje_checked %}checked{% endif %}>
-                                        {{ eje.nombre }}
-                                    </label>
-                                    <textarea class="border rounded p-2" id="{{ eje_field_name }}" name="{{ eje_field_name }}" placeholder="Detalla el contenido para este eje." {% if not eje_checked %} hidden {%endif%}>
-                                        {{ form_values|get_value:eje_field_name }}
-                                    </textarea>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <p>No hay ejes asociados a esta asignatura en Core.</p>
-                        {% endif %}
-                    </section>
-                    <div class="flex justify-between">
-                        <section class="w-">
-                            <h4 class="text-xl mb-4">¿Cómo evaluar?</h4>
-                    
-                            <div class="flex gap-8">
-                                <div class="flex flex-col">
-                                    {% field_name "procedimiento_" asignatura.id as procedimiento_name %}
-                                    <label class="mb-4" for="{{ procedimiento_name }}">Procedimiento</label>
-                                    <textarea class="border rounded p-2" id="{{ procedimiento_name }}" name="{{ procedimiento_name }}"
-                                        placeholder="Describe los procedimientos para esta asignatura.">{{ form_values|get_value:procedimiento_name }}</textarea>
-                                </div>
-                                <div class="flex flex-col">
-                                    {% field_name "instrumento_" asignatura.id as instrumento_name %}
-                                    <label class="mb-4" for="{{ instrumento_name }}">Instrumento</label>
-                                    <textarea class="border rounded p-2" id="{{ instrumento_name }}" name="{{ instrumento_name }}"
-                                        placeholder="Describe los instrumentos a utilizar.">{{ form_values|get_value:instrumento_name }}</textarea>
-                                </div>
-                            </div>
-                        </section>
-                        <section>
-                            <h4 class="text-xl mb-4">¿Para qué evaluar?</h4>
-                            {% field_name "objetivo_" asignatura.id as objetivo_name %}
-                            <textarea class="border rounded p-2 h-25" id="{{ objetivo_name }}" name="{{ objetivo_name }}"
-                                placeholder="Redacta el objetivo para esta asignatura.">{{ form_values|get_value:objetivo_name }}</textarea>
-                        </section>
-                    </div>
-                    
-                </div>
-            </article>
-            {% endfor %}
-        </div>
-    </div>
-    <button class="inline-block rounded-sm bg-indigo-600 px-12 py-3 text-white hover:bg-indigo-700" type="submit">
-        Guardar formulario PED
-    </button>
-</form>
-
 <script>
     (function () {
         const selectAsignaturas = document.getElementById('asignaturas');
@@ -173,6 +226,8 @@
         const decretoSelect = document.getElementById('decreto');
         const decretoLabel = document.getElementById('decreto-seleccionado');
         const ejeCheckboxes = document.querySelectorAll('input[type="checkbox"][data-target]');
+        const toggleButton = document.getElementById('toggle-formulario');
+        const formularioContainer = document.getElementById('formulario-container');
 
         function actualizarBloques() {
             const activos = Array.from(selectAsignaturas.selectedOptions).map(option => option.value);
@@ -199,6 +254,26 @@
             if (!event.currentTarget.checked) {
                 textarea.value = '';
             }
+        }
+
+        function actualizarToggleLabel() {
+            if (!toggleButton || !formularioContainer) {
+                return;
+            }
+            const hidden = formularioContainer.hasAttribute('hidden');
+            toggleButton.textContent = hidden ? 'Crear nuevo PED' : 'Ocultar formulario';
+        }
+
+        if (toggleButton && formularioContainer) {
+            toggleButton.addEventListener('click', () => {
+                if (formularioContainer.hasAttribute('hidden')) {
+                    formularioContainer.removeAttribute('hidden');
+                } else {
+                    formularioContainer.setAttribute('hidden', '');
+                }
+                actualizarToggleLabel();
+            });
+            actualizarToggleLabel();
         }
 
         selectAsignaturas.addEventListener('change', actualizarBloques);

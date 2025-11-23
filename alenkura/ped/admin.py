@@ -21,8 +21,8 @@ class PlanAsignaturaInline(admin.TabularInline):
 
 @admin.register(PlanEvaluacion)
 class PlanEvaluacionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'decreto', 'creado_en', 'actualizado_en')
-    list_filter = ('decreto', 'creado_en')
+    list_display = ('id', 'decreto', 'curso', 'creado_en', 'actualizado_en')
+    list_filter = ('decreto', 'curso', 'creado_en')
     inlines = (PlanAsignaturaInline,)
 
 

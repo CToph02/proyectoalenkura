@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'paciApp',
     'indicadoresApp',
     'instrumentosApp',
+    'aula',
     'core',
     'ped',
 ]

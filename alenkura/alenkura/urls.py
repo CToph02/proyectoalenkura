@@ -24,5 +24,6 @@ urlpatterns = [
     path('ped/', include('ped.urls')),
     path('paci/', include('paciApp.urls')),
     path('indicadores/', include('indicadoresApp.urls')),
-    path('instrumentos/', include('instrumentosApp.urls'))
+    path('instrumentos/', include('instrumentosApp.urls')),
+    path('aula/', include('aula.urls')),
 ]

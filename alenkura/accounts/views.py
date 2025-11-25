@@ -9,7 +9,7 @@ def login_view(request):
     if user is not None:
         print('a')
         login(request, user)
-        return redirect('core:index')
+        return redirect('coreApp:index')
     return render(request, 'login.html')
 
 def logout_view(request):

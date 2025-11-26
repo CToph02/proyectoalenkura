@@ -7,7 +7,6 @@ def login_view(request):
     password = request.POST.get('password')
     user = authenticate(username=username, password=password)
     if user is not None:
-        print('a')
         login(request, user)
         return redirect('coreApp:index')
     return render(request, 'login.html')

@@ -20,6 +20,7 @@ class ProyectoAula(models.Model):
     conocimientos = models.TextField(blank=True)
     habilidades = models.TextField(blank=True)
     actitudes = models.TextField(blank=True)
+    gantt_data = models.TextField(blank=True)
     descripcion = models.TextField(blank=True)
     procedimiento = models.CharField(max_length=120, default="Observador")
     instrumento = models.CharField(max_length=150, default="Escala de apreciacion")

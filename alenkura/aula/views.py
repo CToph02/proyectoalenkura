@@ -2,6 +2,7 @@ import json
 from io import BytesIO
 
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -44,6 +45,14 @@ def proyecto_view(request):
     selected_sala = None
     errors = []
     selected_ejes_ids = set()
+    User = get_user_model()
+    docentes = User.objects.filter(role=User.Roles.TEACHER).order_by("first_name", "last_name", "username")
+    default_docente_id = (
+        request.user.id
+        if request.user.is_authenticated and getattr(request.user, "role", None) == User.Roles.TEACHER
+        else None
+    )
+    selected_docente_id = None
     docente_por_defecto = (
         request.user.get_full_name()
         if request.user.is_authenticated and request.user.get_full_name()
@@ -54,7 +63,20 @@ def proyecto_view(request):
         sala_val = request.POST.get("sala")
         ejes_val = request.POST.getlist("ejes")
 
-        docente = request.POST.get("docente", "").strip() or docente_por_defecto
+        docente_id_val = request.POST.get("docente_id")
+        docente_obj = None
+        if docente_id_val:
+            try:
+                selected_docente_id = int(docente_id_val)
+                docente_obj = docentes.get(pk=selected_docente_id)
+            except (ValueError, User.DoesNotExist):
+                errors.append("El docente seleccionado no existe.")
+        else:
+            errors.append("Debes seleccionar un docente.")
+
+        docente = (
+            docente_obj.get_full_name() or docente_obj.username if docente_obj else docente_por_defecto
+        )
         objetivos_inputs = [
             request.POST.get(f"obj_curricular_{i}", "").strip() for i in range(1, 5)
         ]
@@ -141,6 +163,9 @@ def proyecto_view(request):
         .prefetch_related("asignaturas", "subsectores__eje__asignatura")
         .order_by("-creado_en")
     )
+    active_panel = request.GET.get("panel") or ""
+    if request.method == "POST" or errors:
+        active_panel = "crear"
 
     context = {
         "page_title": "Proyecto de Aula",
@@ -151,8 +176,10 @@ def proyecto_view(request):
         "errors": errors,
         "form_values": form_values,
         "proyectos": proyectos,
-        "form_expanded": request.method == "POST" or bool(errors),
         "selected_ejes_ids": list(selected_ejes_ids) if request.method == "POST" else [],
+        "docentes": docentes,
+        "selected_docente_id": selected_docente_id or default_docente_id,
+        "active_panel": active_panel,
     }
     return render(request, "aula/proyecto.html", context)
 

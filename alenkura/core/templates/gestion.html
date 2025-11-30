@@ -1,0 +1,288 @@
+{% extends 'base.html'%}
+
+{% block title %}Gestión académica{% endblock %}
+
+{% block content %}
+<section class="space-y-6">
+  <header class="flex flex-col gap-1">
+    <p class="text-sm uppercase tracking-wide text-indigo-300">Configuración rápida</p>
+    <h1 class="text-3xl font-bold">Gestión de estudiantes, profesores y cursos</h1>
+    <p class="text-gray-300">Crea registros y revisa la información existente sin cambiar de página.</p>
+  </header>
+
+  {% if messages %}
+  <div class="space-y-2">
+    {% for message in messages %}
+    <div class="rounded-md border border-indigo-500/60 bg-indigo-900/50 px-4 py-3 text-sm text-indigo-50">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="flex flex-wrap gap-3">
+    <button type="button" data-tab="estudiantes"
+      class="tab-trigger rounded-full px-5 py-2 text-sm font-semibold transition">
+      Estudiantes
+    </button>
+    <button type="button" data-tab="profesores"
+      class="tab-trigger rounded-full px-5 py-2 text-sm font-semibold transition">
+      Profesores
+    </button>
+    <button type="button" data-tab="cursos"
+      class="tab-trigger rounded-full px-5 py-2 text-sm font-semibold transition">
+      Cursos
+    </button>
+  </div>
+
+  <div class="space-y-10">
+    <div data-panel="estudiantes" class="{% if active_tab != 'estudiantes' %}hidden{% endif %} space-y-6">
+      <div class="grid gap-6 lg:grid-cols-2">
+        <form method="post" class="rounded-xl border border-gray-700 bg-gray-900/70 p-6 shadow-xl backdrop-blur">
+          {% csrf_token %}
+          <input type="hidden" name="active_tab" value="estudiantes">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-400">Nuevo registro</p>
+              <h2 class="text-xl font-semibold">Crear estudiante</h2>
+            </div>
+            <span class="rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-200">Paso 1</span>
+          </div>
+          <div class="mt-4 grid gap-4 md:grid-cols-2">
+            {% for field in estudiante_form %}
+            <div>
+              <label class="mb-1 block text-sm text-gray-300">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+              <p class="text-xs text-gray-400">{{ field.help_text }}</p>
+              {% endif %}
+              {% for error in field.errors %}
+              <p class="text-sm text-red-400">{{ error }}</p>
+              {% endfor %}
+            </div>
+            {% endfor %}
+          </div>
+          <div class="mt-6 flex justify-end">
+            <button type="submit"
+              class="rounded-lg bg-indigo-600 px-5 py-2 font-semibold text-white shadow-lg transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+              Crear estudiante
+            </button>
+          </div>
+        </form>
+
+        <div class="rounded-xl border border-gray-700 bg-gray-900/40 p-6 shadow-inner">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-400">Resumen</p>
+              <h2 class="text-xl font-semibold">Estudiantes creados</h2>
+            </div>
+            <span class="text-xs text-gray-400">{{ estudiantes|length }} en total</span>
+          </div>
+          <div class="mt-4 max-h-[28rem] overflow-auto rounded-lg border border-gray-700">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-800 text-gray-200">
+                <tr class="text-left">
+                  <th class="px-3 py-2">Nombre</th>
+                  <th class="px-3 py-2">RUT</th>
+                  <th class="px-3 py-2">Nivel</th>
+                  <th class="px-3 py-2">Curso</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-800">
+                {% for estudiante in estudiantes %}
+                <tr class="hover:bg-gray-800/60">
+                  <td class="px-3 py-2">{{ estudiante.first_name }} {{ estudiante.last_name }}</td>
+                  <td class="px-3 py-2">{{ estudiante.rut }}</td>
+                  <td class="px-3 py-2">{{ estudiante.get_nivel_display }}</td>
+                  <td class="px-3 py-2">{{ estudiante.curso|default:'Sin curso' }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="4" class="px-3 py-4 text-center text-gray-400">No hay estudiantes registrados.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-panel="profesores" class="{% if active_tab != 'profesores' %}hidden{% endif %} space-y-6">
+      <div class="grid gap-6 lg:grid-cols-2">
+        <form method="post" class="rounded-xl border border-gray-700 bg-gray-900/70 p-6 shadow-xl backdrop-blur">
+          {% csrf_token %}
+          <input type="hidden" name="active_tab" value="profesores">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-400">Nuevo registro</p>
+              <h2 class="text-xl font-semibold">Crear profesor</h2>
+            </div>
+            <span class="rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-200">Paso 2</span>
+          </div>
+          <div class="mt-4 grid gap-4 md:grid-cols-2">
+            {% for field in profesor_form %}
+            <div>
+              <label class="mb-1 block text-sm text-gray-300">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+              <p class="text-xs text-gray-400">{{ field.help_text }}</p>
+              {% endif %}
+              {% for error in field.errors %}
+              <p class="text-sm text-red-400">{{ error }}</p>
+              {% endfor %}
+            </div>
+            {% endfor %}
+          </div>
+          <div class="mt-6 flex justify-end">
+            <button type="submit"
+              class="rounded-lg bg-indigo-600 px-5 py-2 font-semibold text-white shadow-lg transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+              Crear profesor
+            </button>
+          </div>
+        </form>
+
+        <div class="rounded-xl border border-gray-700 bg-gray-900/40 p-6 shadow-inner">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-400">Resumen</p>
+              <h2 class="text-xl font-semibold">Profesores</h2>
+            </div>
+            <span class="text-xs text-gray-400">{{ profesores|length }} en total</span>
+          </div>
+          <div class="mt-4 max-h-[28rem] overflow-auto rounded-lg border border-gray-700">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-800 text-gray-200">
+                <tr class="text-left">
+                  <th class="px-3 py-2">Usuario</th>
+                  <th class="px-3 py-2">Nombre</th>
+                  <th class="px-3 py-2">Correo</th>
+                  <th class="px-3 py-2">Profesión</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-800">
+                {% for profesor in profesores %}
+                <tr class="hover:bg-gray-800/60">
+                  <td class="px-3 py-2">{{ profesor.username }}</td>
+                  <td class="px-3 py-2">{{ profesor.get_full_name|default:'Sin nombre' }}</td>
+                  <td class="px-3 py-2">{{ profesor.email|default:'-' }}</td>
+                  <td class="px-3 py-2">{{ profesor.profesion|default:'-' }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="4" class="px-3 py-4 text-center text-gray-400">No hay profesores registrados.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-panel="cursos" class="{% if active_tab != 'cursos' %}hidden{% endif %} space-y-6">
+      <div class="grid gap-6 lg:grid-cols-2">
+        <form method="post" class="rounded-xl border border-gray-700 bg-gray-900/70 p-6 shadow-xl backdrop-blur">
+          {% csrf_token %}
+          <input type="hidden" name="active_tab" value="cursos">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-400">Nuevo registro</p>
+              <h2 class="text-xl font-semibold">Crear curso</h2>
+            </div>
+            <span class="rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-200">Paso 3</span>
+          </div>
+          <div class="mt-4 grid gap-4 md:grid-cols-2">
+            {% for field in curso_form %}
+            <div>
+              <label class="mb-1 block text-sm text-gray-300">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+              <p class="text-xs text-gray-400">{{ field.help_text }}</p>
+              {% endif %}
+              {% for error in field.errors %}
+              <p class="text-sm text-red-400">{{ error }}</p>
+              {% endfor %}
+            </div>
+            {% endfor %}
+          </div>
+          <div class="mt-6 flex justify-end">
+            <button type="submit"
+              class="rounded-lg bg-indigo-600 px-5 py-2 font-semibold text-white shadow-lg transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+              Crear curso
+            </button>
+          </div>
+        </form>
+
+        <div class="rounded-xl border border-gray-700 bg-gray-900/40 p-6 shadow-inner">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-400">Resumen</p>
+              <h2 class="text-xl font-semibold">Cursos</h2>
+            </div>
+            <span class="text-xs text-gray-400">{{ cursos|length }} en total</span>
+          </div>
+          <div class="mt-4 max-h-[28rem] overflow-auto rounded-lg border border-gray-700">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-800 text-gray-200">
+                <tr class="text-left">
+                  <th class="px-3 py-2">Nombre</th>
+                  <th class="px-3 py-2">Nivel</th>
+                  <th class="px-3 py-2">Sala</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-800">
+                {% for curso in cursos %}
+                <tr class="hover:bg-gray-800/60">
+                  <td class="px-3 py-2">{{ curso.name }}</td>
+                  <td class="px-3 py-2">{{ curso.get_level_display }}</td>
+                  <td class="px-3 py-2">{{ curso.sala_id|default:'Sin sala' }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="3" class="px-3 py-4 text-center text-gray-400">No hay cursos registrados.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const tabButtons = document.querySelectorAll('.tab-trigger');
+  const panels = document.querySelectorAll('[data-panel]');
+  const hiddenInputs = document.querySelectorAll('input[name="active_tab"]');
+  const defaultTab = "{{ active_tab|default:'estudiantes' }}";
+
+  const setActiveTab = (tab) => {
+    tabButtons.forEach((btn) => {
+      const isActive = btn.dataset.tab === tab;
+      btn.className = `tab-trigger rounded-full px-5 py-2 text-sm font-semibold transition ${isActive ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`;
+    });
+
+    panels.forEach((panel) => {
+      panel.classList.toggle('hidden', panel.dataset.panel !== tab);
+    });
+
+    hiddenInputs.forEach((input) => input.value = tab);
+  };
+
+  tabButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      setActiveTab(tab);
+      if (window.history?.replaceState) {
+        const url = new URL(window.location);
+        url.searchParams.set('tab', tab);
+        window.history.replaceState({}, '', url);
+      }
+    });
+  });
+
+  setActiveTab(defaultTab);
+</script>
+{% endblock %}

@@ -4,7 +4,7 @@ from django.urls import reverse_lazy
 from django.db import transaction
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from core.models import Estudiante, Asignatura, Eje, Contenido
+from core.models import Estudiante, Asignatura, Eje, Contenido, Estrategias, Objetivos
 from instrumentosApp.models import Indicadores
 from accounts.models import User
 from .models import PaciAppModel
@@ -35,6 +35,8 @@ def index(request, id):
         'asignaturas': Asignatura.objects.all(),
         'ejes': Eje.objects.all(),
         'contenidos': Contenido.objects.all(),
+        'estrategias': Estrategias.objects.all(),
+        'objetivos': Objetivos.objects.all()
     }
     return render(request, 'paci.html', context)
 
@@ -44,11 +46,12 @@ class paci_list(LoginRequiredMixin, ListView):
 class paci_create(LoginRequiredMixin, CreateView):
 
     fields = [
-    'nombre', 
-    'descripcion', 
-    'fecha_inicio', 
-    'fecha_fin', 
-    'estado']
+        'nombre', 
+        'descripcion', 
+        'fecha_inicio', 
+        'fecha_fin', 
+        'estado'
+    ]
 
     success_url = reverse_lazy("paci:list")
 class paci_edit(LoginRequiredMixin, UpdateView):

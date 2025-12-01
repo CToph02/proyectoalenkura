@@ -1,11 +1,12 @@
 {% extends 'base.html'%}
 
 {% block content %}
-{% if not indicadores %}
+<!-- {% if not asignatura.paci_estudiante %}
     <p>No hay paci para este estudiante</p>
-{% endif %}
-<p class="text-3xl mb-4">Indicadores del estudiante: {{paci.student}}</p>
+{% endif %} -->
+<p class="text-3xl mb-4">Indicadores del estudiante: {{estudiante.first_name}} {{estudiante.last_name}}</p>
 <form action="">
+  {% for asignatura in asignaturas %}
     <div class="max-h-100 overflow-x-auto rounded border border-gray-300 shadow-sm dark:border-gray-600 mb-4">
     <table class="min-w-full divide-y-2 divide-gray-200 dark:divide-gray-700">
         <thead class="tr:text-left rtl:text-right">
@@ -19,10 +20,9 @@
 
         </thead>
         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-            {% for indi in indicadores %}
-            <tr class="*:text-gray-900 *:first:font-medium dark:*:text-white">
+          <!-- <tr class="*:text-gray-900 *:first:font-medium dark:*:text-white">
                 <td class="text-center px-3 py-2 whitespace-nowrap">
-                    {{indi}}
+                    <!-- {{indi}} -->
                 </td>
                 {% for valor in "4321" %}
                 <td class="text-center px-3 py-2 whitespace-nowrap">
@@ -34,7 +34,9 @@
                 {% endfor %}
                 <td class="text-center px-3 py-2 whitespace-nowrap" id="logro_{{indi.id}}"></td>
             </tr>
-            {% endfor %}
+            <!-- {% for indi in indicadores %}
+            
+            {% endfor %} --> -->
         </tbody>
     </table>
 </div>
@@ -42,6 +44,7 @@
     <p id="total" class="mt-4 font-semibold"></p>
     <button class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" type="submit">Guardar</button>
 </div>
+{% endfor %}
 </form>
 <script>
     // Nombres únicos de todos los grupos de radios

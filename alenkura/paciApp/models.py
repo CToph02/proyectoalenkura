@@ -10,19 +10,19 @@ class PaciAppModel(DateTime):
     axis = models.ForeignKey(Eje, on_delete=models.CASCADE, related_name='paci_axis', null=True)
     objetivo_general = models.TextField(null=True)
     adecuacion_curricular = models.TextField(null=True)
-
     estrategias = models.TextField(blank=True)
 
     def __str__(self) -> str:
         return f'{self.student} - {self.subject} - {self.axis}'
-    
+
     class Meta:
         verbose_name = "Paci App Model"
         verbose_name_plural = "Paci App Models"
 
-class indicadores(models.Model):
+
+class Indicador(models.Model):
     indicador = models.CharField(max_length=150, null=True)
-    paci = models.ForeignKey(PaciAppModel, on_delete=models.CASCADE, related_name='paci')
+    paci = models.ForeignKey(PaciAppModel, on_delete=models.CASCADE, related_name='indicadores_paci', null=True)
 
     def __str__(self) -> str:
-        return f'{self.indicador}'
+        return self.indicador or ""

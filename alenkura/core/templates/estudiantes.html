@@ -4,7 +4,7 @@
 <h1 class="text-2xl font-bold mb-4">Lista de Estudiantes</h1>
 
 {% if estudiantes %}
-    <div class="max-h-100 overflow-x-auto rounded border border-gray-300 shadow-sm dark:border-gray-600">
+    <div class="h-full overflow-x-auto rounded border border-gray-300 shadow-sm dark:border-gray-600">
         <table class="min-w-full divide-y-2 divide-gray-200 dark:divide-gray-700">
             <thead class="tr:text-left rtl:text-right">
                 <tr class="*:font-medium *:text-gray-900 dark:*:text-white">
@@ -27,14 +27,12 @@
                         <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" href="{% url 'paciApp:paci_list' estudiante.id %}">
                             Descargar P.A.C.I.
                         </a>
+                        <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" href="{% url 'instrumentosApp:instrumentos_list' estudiante.id %}">
+                            Ver Instrumento de evaluación
+                        </a>
                         {% else %}
                         <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" href="{% url 'paciApp:paci_list' estudiante.id %}">
                             Agregar P.A.C.I.
-                        </a>
-                        {% endif %}
-                        {% if estudiante.tiene_indicadores %}
-                        <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" href="{% url 'instrumentosApp:instrumentos_list' estudiante.id %}">
-                            Ver Indicadores de logro
                         </a>
                         {% endif %}
                     </td>

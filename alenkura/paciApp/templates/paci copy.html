@@ -1,0 +1,188 @@
+{% extends 'base.html'%}
+
+{% block content %}
+
+<h1 class="text-2xl font-bold mb-4">Plan de Adecuación Curricular Individual (P.A.C.I.)</h1>
+<p>Nombre del estudiante: {{ estudiante.first_name }} {{ estudiante.last_name }}</p>
+<form action="{% url 'paciApp:create_paci' estudiante.id %}" method="post">
+    {% csrf_token %}
+    <section class="flex flex-col mt-4">
+        <div class="flex items-center justify-between mb-4">
+            <button type="submit" class="flex gap-4 rounded-lg px-4 py-2 text-sm font-medium text-white 
+        hover:bg-gray-800 hover:text-gray-600 
+        dark:text-white dark:bg-gray-600 dark:hover:bg-gray-700 dark:hover:text-white">
+                Guardar P.A.C.I.
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                </svg>
+            </button>
+        </div>
+    </section>
+    {% for asignatura in asignaturas %}
+    <div class="flexborder border-gray-600 rounded p-4 mb-4 bg-gray-900">
+        <section class="flex justify-evenly gap-4">
+            <div class="flex flex-col justify-center mb-4">
+                <label class="text-2xl" for="asignatura">Asignatura: {{asignatura.nombre}}</label>
+            </div>
+            <div class="flex flex-col p-2 mb-4 border border-gray-600 rounded">
+                <label for="eje">Seleccione el Eje</label>
+                <select
+                    class="p-4 mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                    name="eje" id="eje_{{asignatura.id}}" multiple>
+                    {% for eje in asignatura.ejes.all %}
+                    <option value="eje.id">{{eje.nombre}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </section>
+        <div class="grid hidden" id="grid_{{asignatura.id}}">
+            <div class="p-2 border border-gray-600 rounded">
+                <section class="flex gap-8 w-full">
+                    <div class="flex flex-col mb-4 w-full ">
+                        <label for="contenido">Seleccione Objetivo General</label>
+                        <select
+                            class="p-4 mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                            name="objetivos" id="objetivos">
+                            {% if objetivos|length == 0 %}
+                            <option value="none">No hay objetivos disponibles</option>
+                            {% else %}
+                            {% for obj in objetivos %}
+                            <option value="{{obj.objetivo}}">{{obj.objetivo}}</option>
+                            {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div class="flex flex-col mb-4 w-full">
+                        <label for="contenido">Seleccione las estrategias/recursos</label>
+                        <select
+                            class="p-4 mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                            name="estrategias" id="estrategias_{{asignatura.nombre}}" multiple>
+                            {% for est in estrategias %}
+                            <option value="{{est.estrategia}}">{{est.estrategia}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </section>
+                <section>
+                    <div class="flex flex-col mb-4 w-full">
+                        <label for="contenido">Ingrese Adecuación curricular</label>
+                        <textarea class="border border-gray-600 rounded p-2 h-25"
+                            name="adecuacion_{{asignatura.nombre}}" id="adecuacion"></textarea>
+                    </div>
+                </section>
+
+                <section>
+                    <label for="indicadores_{{asignatura.id}}">Agregue indicadores</label>
+                    <div>
+                        <div class="flex gap-4 h-10">
+                            <input id="nuevo_indicador_{{asignatura.id}}" type="text"
+                                class="border border-gray-600 rounded p-2 w-full"
+                                placeholder="Ingrese indicador para {{asignatura.nombre}}">
+                            <button id="btn_add_indicador_{{asignatura.id}}"
+                                class="flex items-center text-center rounded bg-indigo-600 p-4 w-60 gap-4 text-white hover:bg-indigo-700"
+                                type="button">
+                                Agregar indicador
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" class="size-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                </svg>
+                            </button>
+                        </div>
+                        <ul class="flex flex-col gap-4" id="indicadores_lista_{{asignatura.id}}"></ul>
+                        <input type="hidden" name="indicadores_json_{{asignatura.id}}"
+                            id="indicadores_json_{{asignatura.id}}" value="[]">
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    {% empty %}
+    <option>No hay asignaturas disponibles</option>
+    {% endfor %}
+</form>
+
+<script>
+    (function () {
+        // Obtenemos los datos desde Django
+        const asignaturasData = JSON.parse('{{ asignaturas_json|safe }}');
+
+        // Esta función inicializa cada bloque de asignatura individualmente
+        asignaturasData.forEach(asignatura => {
+            inicializarAsignatura(asignatura);
+        });
+
+        function inicializarAsignatura(asignatura) {
+            const id = asignatura.id;
+            const btnAgregar = document.getElementById(`btn_add_indicador_${id}`);
+            const inputIndicador = document.getElementById(`nuevo_indicador_input_${id}`);
+            const listaIndicadores = document.getElementById(`indicadores_lista_${id}`);
+            const eje = document.getElementById(`eje_${id}`);
+            console.log(eje)
+            let contador = 0;
+
+            function agregarIndicador() {
+                const texto = inputIndicador.value.trim();
+                if (!texto) {
+                    alert("Ingrese un texto para el indicador");
+                    return;
+                }
+
+                contador++;
+
+                // Crear el elemento de lista (LI)
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center border rounded p-2 bg-white dark:bg-gray-700';
+
+                // Contenedor de texto
+                const spanTexto = document.createElement('span');
+                spanTexto.textContent = `${contador}. ${texto}`;
+                spanTexto.className = "flex-grow ml-2";
+
+                // Input oculto para enviar al backend
+                // NOTA: El name lleva el ID de la asignatura para separarlos en el backend
+                const inputHidden = document.createElement('input');
+                inputHidden.type = 'hidden';
+                inputHidden.name = `indicadores_lista_${id}`;
+                inputHidden.value = texto;
+
+                // Botón eliminar
+                const btnEliminar = document.createElement('button');
+                btnEliminar.textContent = 'Eliminar';
+                btnEliminar.type = 'button';
+                btnEliminar.className = 'text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200 ml-2';
+                btnEliminar.addEventListener('click', () => li.remove());
+
+                // Armar el LI
+                li.appendChild(inputHidden);
+                li.appendChild(spanTexto);
+                li.appendChild(btnEliminar);
+
+                // Agregar a la lista visual
+                listaIndicadores.prepend(li);
+
+                // Limpiar input
+                inputIndicador.value = '';
+                inputIndicador.focus();
+            }
+
+            // Evento Click en el botón
+            if (btnAgregar) {
+                btnAgregar.addEventListener('click', agregarIndicador);
+            }
+
+            // Evento Enter en el input
+            if (inputIndicador) {
+                inputIndicador.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault(); // Evita enviar el formulario principal
+                        agregarIndicador();
+                    }
+                });
+            }
+        }
+    })();
+</script>
+{% endblock %}

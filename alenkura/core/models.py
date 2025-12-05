@@ -38,7 +38,6 @@ class Eje(models.Model):
     def __str__(self):
         return f"{self.nombre} ({self.asignatura.nombre})"
 
-
 class Contenido(models.Model):
     nombre = models.CharField(max_length=150)
     descripcion = models.TextField(blank=True)

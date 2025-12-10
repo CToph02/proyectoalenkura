@@ -61,7 +61,7 @@
             <section>
                 <div class="flex flex-col mb-4 w-full">
                     <label>Ingrese Adecuación curricular</label>
-                    <textarea class="input-adecuacion border border-gray-600 rounded p-2 h-25"></textarea>
+                    <textarea class="input-adecuacion border border-gray-600 bg-gray-900 rounded p-2 h-25"></textarea>
                 </div>
             </section>
 
@@ -190,11 +190,11 @@
 
                 contadorIndicadores++;
                 const li = document.createElement('li');
-                li.className = 'flex justify-between items-center border rounded p-2 bg-white dark:bg-gray-700 text-sm';
+                li.className = 'flex justify-between items-center border rounded p-2 bg-white dark:bg-gray-800 text-sm';
                 
                 li.innerHTML = `
                     <span class="flex-grow ml-2">${contadorIndicadores}. ${texto}</span>
-                    <button type="button" class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200 ml-2 btn-eliminar">Eliminar</button>
+                    <button type="button" class="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-200 ml-2 btn-eliminar">Eliminar</button>
                 `;
 
                 // Botón eliminar dentro del LI

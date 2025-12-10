@@ -1,11 +1,15 @@
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.db.models import Exists, OuterRef
 
 from .models import Curso, Estudiante
 from paciApp.models import PaciAppModel
+from instrumentosApp.models import Indicadores, Nota
+from ped.models import PlanAsignatura
 from .forms import CursoForm, EstudianteForm, ProfesorForm
+
+# Create your views here.
 
 def index(request):
     return render(request, 'index.html')
@@ -16,6 +20,9 @@ def estudiantes_view(request):
         tiene_paci=Exists(
             PaciAppModel.objects.filter(student=OuterRef('pk'))
         ),
+        # tiene_nota=Exists(
+        #     Nota.objects.filter(estudiante=OuterRef('pk'))
+        # ),
         # tiene_indicadores=Exists(
         #     Indicadores.objects.filter(paci__student=OuterRef('pk'))
         # )
@@ -86,3 +93,27 @@ def gestion_view(request):
         'cursos': cursos,
     }
     return render(request, 'gestion.html', context)
+
+def send_email(request, id):
+    from django.core.mail import send_mail
+    estudiante = get_object_or_404(Estudiante, pk=id)
+    PaciAppModel.objects.filter(student=estudiante)
+
+    para = request.POST.get('para')
+    cuerpo_mensaje = request.POST.get('cuerpo_mensaje')
+    print(para)
+    print(cuerpo_mensaje)
+
+    # mail = send_mail(
+    #     "Asunto SMTP",
+    #     "Texto plano",
+    #     "cm38314@gmail.com",
+    #     ["cm23456788@gmail.com"],
+    #     html_message="<p>Hola</p>",
+    #     fail_silently=False
+    # )
+
+    context = {
+        'estudiante':estudiante
+    }
+    return render(request, 'correo.html', context)

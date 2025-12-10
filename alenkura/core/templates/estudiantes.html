@@ -4,7 +4,7 @@
 <h1 class="text-2xl font-bold mb-4">Lista de Estudiantes</h1>
 
 {% if estudiantes %}
-    <div class="h-full overflow-x-auto rounded border border-gray-300 shadow-sm dark:border-gray-600">
+    <div class="h-full overflow-x-auto rounded border border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-900">
         <table class="min-w-full divide-y-2 divide-gray-200 dark:divide-gray-700">
             <thead class="tr:text-left rtl:text-right">
                 <tr class="*:font-medium *:text-gray-900 dark:*:text-white">
@@ -24,16 +24,25 @@
                     <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.edad }}</td>
                     <td class="flex gap-4 justify-center px-3 py-2 whitespace-nowrap">
                         {% if estudiante.tiene_paci %}
-                        <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" href="{% url 'paciApp:paci_list' estudiante.id %}">
-                            Descargar P.A.C.I.
-                        </a>
-                        <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" href="{% url 'instrumentosApp:instrumentos_list' estudiante.id %}">
-                            Ver Instrumento de evaluación
-                        </a>
+                            <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-300" href="{% url 'paciApp:pdf_paci' estudiante.id %}">
+                                Descargar P.A.C.I.
+                            </a>
+                            {% if estudiante.tiene_instrumento %}
+                                <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" href="{% url 'instrumentosApp:evaluar' estudiante.id %}">
+                                    Ver Instrumento de evaluación
+                                </a>
+                            {% else %}
+                                <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-500" href="{% url 'instrumentosApp:instrumentos_list' estudiante.id %}">
+                                    Evaluar estudiante
+                                </a>
+                                <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-500" href="{% url 'coreApp:send_mail' estudiante.id %}">
+                                    Enviar correo
+                                </a>
+                            {% endif %}
                         {% else %}
-                        <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" href="{% url 'paciApp:paci_list' estudiante.id %}">
-                            Agregar P.A.C.I.
-                        </a>
+                            <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" href="{% url 'paciApp:paci_list' estudiante.id %}">
+                                Agregar P.A.C.I.
+                            </a>
                         {% endif %}
                     </td>
                 </tr>

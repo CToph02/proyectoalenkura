@@ -1,7 +1,7 @@
-from django.shortcuts import render, get_object_or_404, HttpResponse
+from django.shortcuts import redirect, render, get_object_or_404
 from django.db.models import Prefetch
-from paciApp.models import PaciAppModel
-from .models import Indicadores
+from paciApp.models import PaciAppModel, Indicador
+from .models import Indicadores, Nota
 from core.models import Estudiante, Asignatura
 # Create your views here.
 
@@ -9,12 +9,17 @@ from core.models import Estudiante, Asignatura
 def index(request, id):
     estudiante = get_object_or_404(Estudiante, id=id)
 
-    pacis_estudiante = (
+    paci_estudiante = (
         PaciAppModel.objects
         .filter(student_id=estudiante.id)
-        .select_related(
-            "subject", "axis"
-        ).prefetch_related('indicadores_paci')
+        .select_related("subject", "axis")
+        .prefetch_related(
+            Prefetch(
+                'indicadores_paci',                       # relación existente en tu modelo
+                queryset=Indicador.objects.all(),         # opcional: añadir filtros si los necesitas
+                to_attr='indicadores'                     # cada PaciAppModel tendrá .indicadores
+            )
+        )
     )
     asignaturas = (
         Asignatura.objects
@@ -24,18 +29,21 @@ def index(request, id):
             .prefetch_related(
                 Prefetch(
                     'paci_subject',
-                    queryset=pacis_estudiante,
-                    to_attr='pacis_estudiante'
+                    queryset=paci_estudiante,
+                    to_attr='paci_estudiante'
                 )
-                
             )
         ).distinct()
+    
     context = {
-        "estudiante": estudiante, 
-        "asignaturas": asignaturas
+        "estudiante": estudiante,
+        "asignatura": asignaturas
     }
     return render(request, "indicadores.html", context)
 
 
-def ind(request):
-    return HttpResponse("hola")
+def evaluar(request, id):
+    indicadores = request.POST.get('')
+    estudiante = Estudiante.objects.get(id=id)
+
+    return redirect('coreApp:estudiantes')

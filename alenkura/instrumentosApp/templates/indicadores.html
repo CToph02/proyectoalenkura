@@ -1,91 +1,182 @@
-{% extends 'base.html'%}
+{% extends 'base.html' %}
 
 {% block content %}
-<!-- {% if not asignatura.paci_estudiante %}
-    <p>No hay paci para este estudiante</p>
-{% endif %} -->
-<p class="text-3xl mb-4">Indicadores del estudiante: {{estudiante.first_name}} {{estudiante.last_name}}</p>
-<form action="">
-  {% for asignatura in asignaturas %}
-    <div class="max-h-100 overflow-x-auto rounded border border-gray-300 shadow-sm dark:border-gray-600 mb-4">
-    <table class="min-w-full divide-y-2 divide-gray-200 dark:divide-gray-700">
-        <thead class="tr:text-left rtl:text-right">
-            <tr class="*:font-medium *:text-gray-900 dark:*:text-white">
-                <th class="text-center px-3 py-2 whitespace-nowrap">Indicador</th>
-                {% for valor in "4321" %}
-                    <th class="text-center px-3 py-2 whitespace-nowrap">{{valor}} puntos</th>
-                {% endfor %}
-                <th class="text-center px-3 py-2 whitespace-nowrap">Logro</th>
-            </tr>
+<div class="container mx-auto px-4 py-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800 dark:text-white">
+            Instrumento de evaluación del estudiante: <span class="text-teal-400">{{estudiante.first_name}}
+                {{estudiante.last_name}}</span>
+        </h1>
+    </div>
 
-        </thead>
-        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-          <!-- <tr class="*:text-gray-900 *:first:font-medium dark:*:text-white">
-                <td class="text-center px-3 py-2 whitespace-nowrap">
-                    <!-- {{indi}} -->
-                </td>
-                {% for valor in "4321" %}
-                <td class="text-center px-3 py-2 whitespace-nowrap">
-                    <input class="peer sr-only" name="indicador_{{indi.id}}" type="radio" id="indicador_{{indi.id}}_{{valor}}" value="{{valor}}">
-                    <label class="w-10 h-10 inline-flex items-center justify-center px-2 py-2 border rounded-md cursor-pointer peer-checked:bg-gray-800 peer-checked:text-white peer-checked:border-gray-800 hover:bg-gray-700" for="indicador_{{indi.id}}_{{valor}}">
-                        {{valor}}
-                    </label>
-                </td>
-                {% endfor %}
-                <td class="text-center px-3 py-2 whitespace-nowrap" id="logro_{{indi.id}}"></td>
-            </tr>
-            <!-- {% for indi in indicadores %}
-            
-            {% endfor %} --> -->
-        </tbody>
-    </table>
+    <form action="{% url 'instrumentosApp:evaluar_estudiante' estudiante.id%}" method="POST" id="evaluacionForm">
+        {% csrf_token %}
+        {% for asig in asignatura %}
+        <div class="mb-8 border-b bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+            <div class="flex justify-between dark:bg-gray-700 px-6 py-4 border-b dark:border-gray-600">
+                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200">
+                    {{ asig.nombre }}
+                    <span class="text-sm font-normal ml-2 text-gray-500" id="resumen_asig_{{ asig.id }}">(0
+                        puntos)</span>
+                </h2>
+                <p>
+                    Puntaje total ({{asig.nombre}}):
+                </p>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-900">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Indicador</th>
+                            <th
+                                class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/2">
+                                Evaluación (4-1)</th>
+                            <th
+                                class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                        {% for paci in asig.paci_estudiante %}
+                        {% for indi in paci.indicadores %}
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <td class="w-80 px-6 py-4 text-sm text-gray-900 dark:text-gray-300">
+                                {{ indi.indicador }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div class="inline-flex gap-2 bg-gray-100 dark:bg-gray-900 rounded-lg p-2" role="group">
+
+                                    {% for valor in "4321" %}
+                                    <label class="relative flex items-center justify-center cursor-pointer group">
+                                        <input type="radio" name="indicador_{{ indi.id }}_{{ asig.id }}"
+                                            value="{{ valor }}" class="peer sr-only input-puntaje"
+                                            data-asignatura="{{ asig.id }}">
+                                        <span class="w-20 h-8 flex items-center justify-center rounded-md text-sm font-medium text-gray-500 transition-all duration-150 ease-in
+                                                peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:shadow-md
+                                                group-hover:text-indigo-600 peer-checked:group-hover:text-white">
+                                            {{ valor }}
+                                        </span>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td class="w-80 px-6 py-4 whitespace-nowrap text-center">
+                                {# id único por indicador+asignatura #}
+                                <span id="estado_{{ indi.id }}_{{ asig.id }}"
+                                    class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 transition-all duration-150 ease-in">
+                                    Pendiente
+                                </span>
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div
+            class="sticky bottom-0 bg-white dark:bg-gray-900 border-b p-4 shadow-lg flex justify-between items-center z-10">
+            <div class="text-lg font-bold text-gray-800 dark:text-white">
+                Puntaje Total Global: <span id="total_global" class="text-indigo-400">0</span>
+            </div>
+            <button type="submit"
+                class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform transform active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                </svg>
+                Evaluar
+            </button>
+        </div>
+    </form>
+
 </div>
-<div class="flex justify-between">
-    <p id="total" class="mt-4 font-semibold"></p>
-    <button class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-700" type="submit">Guardar</button>
-</div>
-{% endfor %}
-</form>
+
 <script>
-    // Nombres únicos de todos los grupos de radios
-    const groups = [...new Set(
-      Array.from(document.querySelectorAll('input[type=radio]'), r => r.name)
-    )];
+    document.addEventListener('DOMContentLoaded', function () {
 
-    // Convierte name="indicador4" -> id de celda "logro4"
-    function logroIdFromName(name) {
-      const sufijo = (name.match(/\d+$/) || [null])[0];
-      return sufijo ? `logro_${sufijo}` : `logro_${name}`;
-    }
+        const form = document.getElementById('evaluacionForm');
 
-    function updateScores() {
-      let total = 0;
+        function updateRowStatusByName(name, value) {
 
-      for (const name of groups) {
-        const checked = document.querySelector(
-          `input[type=radio][name="${CSS.escape(name)}"]:checked`
-        );
-        const value = checked ? parseInt(checked.value, 10) : 0;
+            const partes = name.split('_');
+            const idIndicador = partes[1] || null;
+            const asigId = partes[2] || null;
+            if (!idIndicador || !asigId) return;
 
-        const texto = value == 4 ? 'logrado' : 'En desarrollo';
+            const estadoEl = document.getElementById(`estado_${idIndicador}_${asigId}`);
+            const valor = parseInt(value, 10);
+            if (!estadoEl || Number.isNaN(valor)) return;
 
-        // Escribe en la celda correspondiente a ese grupo (logroX)
-        const cell = document.getElementById(logroIdFromName(name));
-        if (cell) cell.textContent = texto;
+            if (valor === 4) {
+                estadoEl.className = "px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+                estadoEl.textContent = "Logrado";
+            } else if (valor > 0) {
+                estadoEl.className = "px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+                estadoEl.textContent = "En Desarrollo";
+            } else {
+                estadoEl.className = "px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800";
+                estadoEl.textContent = "Pendiente";
+            }
+        }
 
-        // Suma al total
-        if (Number.isFinite(value)) total += value;
-      }
+        function calculateTotals() {
+            let globalTotal = 0;
+            const asignaturasMap = {};
 
-      document.getElementById('total').textContent = `Puntaje Total: ${total}`;
-    }
+            document.querySelectorAll('[id^="resumen_asig_"]').forEach(el => el.textContent = '(0 puntos)');
 
-    // Recalcular al cambiar cualquier radio
-    document.addEventListener('change', (e) => {
-      if (e.target.matches('input[type=radio]')) updateScores();
+            document.querySelectorAll('.input-puntaje:checked').forEach(input => {
+                const val = parseInt(input.value, 10);
+                const asigId = input.dataset.asignatura;
+
+                if (Number.isNaN(val)) return;
+                if (!asigId) {
+                    console.warn('input sin data-asignatura', input);
+                    return;
+                }
+
+                globalTotal += val;
+                asignaturasMap[asigId] = (asignaturasMap[asigId] || 0) + val;
+            });
+
+            // actualizar global
+            const totalGlobalEl = document.getElementById('total_global');
+            if (totalGlobalEl) totalGlobalEl.textContent = globalTotal;
+
+            // actualizar por asignatura
+            for (const [asigId, puntaje] of Object.entries(asignaturasMap)) {
+                const label = document.getElementById(`resumen_asig_${asigId}`);
+                if (label) label.textContent = `(${puntaje} puntos)`;
+                else console.warn('Label de resumen faltante para asignatura', asigId);
+            }
+
+            console.debug('calculateTotals -> global:', globalTotal, 'porAsignatura:', asignaturasMap);
+        }
+
+        if (form) {
+            form.addEventListener('change', function (e) {
+                const target = e.target;
+                if (!target) return;
+                if (target.classList && target.classList.contains('input-puntaje')) {
+
+                    updateRowStatusByName(target.name, target.value);
+
+                    calculateTotals();
+                }
+            });
+        }
+
+        document.querySelectorAll('.input-puntaje:checked').forEach(input => {
+            updateRowStatusByName(input.name, input.value);
+        });
+        calculateTotals();
     });
-
-    // Cálculo inicial
-    updateScores();
-  </script>
+</script>
 {% endblock %}

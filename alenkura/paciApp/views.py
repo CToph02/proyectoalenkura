@@ -10,6 +10,12 @@ from accounts.models import User
 from .models import PaciAppModel, Indicador
 import json
 
+
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
 @login_required
 def index(request, id):
     estudiante = get_object_or_404(Estudiante, pk=id)
@@ -112,3 +118,11 @@ def create_paci(request, id):
             return HttpResponse(f"Error al guardar: {e}", status=500)
 
     return redirect('coreApp:estudiantes')
+
+def pdf_paci(request, id):
+    paci = get_object_or_404(PaciAppModel, id=id)
+    paci_estudiante = PaciAppModel.objects.filter(student=paci.student).select_related('subject')
+    asignaturas = [a.subject for a in paci_estudiante]
+    for asig in asignaturas:
+        print(asig)
+    return HttpResponse(f'Se descargará el paci de {paci.student} en pdf')

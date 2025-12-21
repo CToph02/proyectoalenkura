@@ -42,17 +42,19 @@
                         {% for paci in asig.paci_estudiante %}
                         {% for indi in paci.indicadores %}
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                            <td class="w-80 px-6 py-4 text-sm text-gray-900 dark:text-gray-300">
+                            <td class="w-80 px-6 py-4 text-sm text-gray-900 dark:text-gray-300" name="indi_{{asig.nombre}}">
                                 {{ indi.indicador }}
+                                <input type="text" hidden name="{{ indi.indicador }}_{{asig.nombre}}">
                             </td>
+
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <div class="inline-flex gap-2 bg-gray-100 dark:bg-gray-900 rounded-lg p-2" role="group">
 
                                     {% for valor in "4321" %}
                                     <label class="relative flex items-center justify-center cursor-pointer group">
-                                        <input type="radio" name="indicador_{{ indi.id }}_{{ asig.id }}"
+                                        <input type="radio" name="puntaje_{{ indi.indicador }}_{{ asig.nombre }}"
                                             value="{{ valor }}" class="peer sr-only input-puntaje"
-                                            data-asignatura="{{ asig.id }}">
+                                            data-indicador="{{ indi.id }}" data-asignatura="{{ asig.id }}">
                                         <span class="w-20 h-8 flex items-center justify-center rounded-md text-sm font-medium text-gray-500 transition-all duration-150 ease-in
                                                 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:shadow-md
                                                 group-hover:text-indigo-600 peer-checked:group-hover:text-white">

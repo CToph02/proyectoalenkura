@@ -43,7 +43,20 @@ def index(request, id):
 
 
 def evaluar(request, id):
-    indicadores = request.POST.get('')
     estudiante = Estudiante.objects.get(id=id)
-
-    return redirect('coreApp:estudiantes')
+    asignatura = Asignatura.objects.all()
+    indicadores = Indicadores.objects.all()
+    evaluaciones = {}
+    for key, value in request.POST.items():
+        #print(value)
+        if key == 'csrfmiddlewaretoken':
+            continue
+        print(key)
+        for asig in asignatura:
+            asig = asig.nombre
+            if key.endswith(asig):
+                pass
+            puntajes = request.POST.get(f'puntaje_{indi.indicador}_{asig.nombre}')
+    
+    return redirect('instrumentosApp:instrumentos_list', id=id)
+    # return redirect('coreApp:estudiantes')

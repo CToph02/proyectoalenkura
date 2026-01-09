@@ -7,7 +7,7 @@
     <div class="h-full overflow-x-auto rounded border border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-900">
         <table class="min-w-full divide-y-2 divide-gray-200 dark:divide-gray-700">
             <thead class="tr:text-left rtl:text-right">
-                <tr class="*:font-medium *:text-gray-900 dark:*:text-white">
+                <tr class="*:font-medium *:text-gray-200 dark:*:text-white">
                     <th class="text-center px-3 py-2 whitespace-nowrap">RUT</th>
                     <th class="text-center px-3 py-2 whitespace-nowrap">Nombres</th>
                     <th class="text-center px-3 py-2 whitespace-nowrap">Apellidos</th>
@@ -17,7 +17,7 @@
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                 {% for estudiante in estudiantes %}
-                <tr class="*:text-gray-900 *:first:font-medium dark:*:text-white">
+                <tr class="*:text-gray-200 *:first:font-medium dark:*:text-white">
                     <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.rut }}</td>
                     <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.first_name }}</td>
                     <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.last_name }}</td>
@@ -32,9 +32,15 @@
                                     Ver Instrumento de evaluación
                                 </a>
                             {% else %}
+                            {% if estudiante.tiene_nota %}
+                            <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-500" href="{% url 'instrumentosApp:notas' estudiante.id %}">
+                                    Ver notas
+                                </a>
+                            {% else %}
                                 <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-500" href="{% url 'instrumentosApp:instrumentos_list' estudiante.id %}">
                                     Evaluar estudiante
                                 </a>
+                            {% endif %}
                                 <a class="inline-block rounded-sm bg-indigo-600 px-6 py-2 text-white hover:bg-indigo-500" href="{% url 'coreApp:send_mail' estudiante.id %}">
                                     Enviar correo
                                 </a>

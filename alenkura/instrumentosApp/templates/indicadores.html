@@ -19,9 +19,6 @@
                     <span class="text-sm font-normal ml-2 text-gray-500" id="resumen_asig_{{ asig.id }}">(0
                         puntos)</span>
                 </h2>
-                <p>
-                    Puntaje total ({{asig.nombre}}):
-                </p>
             </div>
 
             <div class="overflow-x-auto">
@@ -32,7 +29,7 @@
                                 Indicador</th>
                             <th
                                 class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/2">
-                                Evaluación (4-1)</th>
+                                Evaluación (1-4)</th>
                             <th
                                 class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Estado</th>
@@ -44,15 +41,15 @@
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <td class="w-80 px-6 py-4 text-sm text-gray-900 dark:text-gray-300" name="indi_{{asig.nombre}}">
                                 {{ indi.indicador }}
-                                <input type="text" hidden name="{{ indi.indicador }}_{{asig.nombre}}">
+                                <!-- <input type="text" hidden name="indicador_{{ indi.id }}_{{asig.nombre}}"> -->
                             </td>
 
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <div class="inline-flex gap-2 bg-gray-100 dark:bg-gray-900 rounded-lg p-2" role="group">
 
-                                    {% for valor in "4321" %}
+                                    {% for valor in "1234" %}
                                     <label class="relative flex items-center justify-center cursor-pointer group">
-                                        <input type="radio" name="puntaje_{{ indi.indicador }}_{{ asig.nombre }}"
+                                        <input type="radio" name="{{ asig.nombre }}_puntaje_{{ indi.indicador }}"
                                             value="{{ valor }}" class="peer sr-only input-puntaje"
                                             data-indicador="{{ indi.id }}" data-asignatura="{{ asig.id }}">
                                         <span class="w-20 h-8 flex items-center justify-center rounded-md text-sm font-medium text-gray-500 transition-all duration-150 ease-in
@@ -82,9 +79,9 @@
         {% endfor %}
 
         <div
-            class="sticky bottom-0 bg-white dark:bg-gray-900 border-b p-4 shadow-lg flex justify-between items-center z-10">
+            class="sticky bottom-0 rounded-lg bg-white dark:bg-gray-900 border-b p-4 shadow-lg flex justify-between items-center z-10">
             <div class="text-lg font-bold text-gray-800 dark:text-white">
-                Puntaje Total Global: <span id="total_global" class="text-indigo-400">0</span>
+                Puntaje Total Global: <span id="total_global" name="pje_total" class="text-indigo-400">0</span>
             </div>
             <button type="submit"
                 class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform transform active:scale-95">

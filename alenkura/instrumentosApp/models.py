@@ -16,9 +16,10 @@ class Indicadores(models.Model):
         return f'{self.indicador}'
     
 class Nota(models.Model):
-    nota = models.SmallIntegerField(null=True, blank=True)
+    nota = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
     asignatura = models.ForeignKey(Asignatura, on_delete=models.CASCADE, related_name='asignatura_nota', null=True, blank=True)
     estudiante = models.ForeignKey(Estudiante, on_delete=models.CASCADE, related_name='estudiante_nota', null=True, blank=True)
+    indicador = models.ForeignKey(Indicadores, on_delete=models.CASCADE, related_name='indicador_nota', null=True, blank=True)
 
     def __str__(self) -> str:
         return f'{self.nota}'

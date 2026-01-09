@@ -20,9 +20,9 @@ def estudiantes_view(request):
         tiene_paci=Exists(
             PaciAppModel.objects.filter(student=OuterRef('pk'))
         ),
-        # tiene_nota=Exists(
-        #     Nota.objects.filter(estudiante=OuterRef('pk'))
-        # ),
+        tiene_nota=Exists(
+            Nota.objects.filter(estudiante=OuterRef('pk'))
+        ),
         # tiene_indicadores=Exists(
         #     Indicadores.objects.filter(paci__student=OuterRef('pk'))
         # )
@@ -104,14 +104,14 @@ def send_email(request, id):
     print(para)
     print(cuerpo_mensaje)
 
-    # mail = send_mail(
-    #     "Asunto SMTP",
-    #     "Texto plano",
-    #     "cm38314@gmail.com",
-    #     ["cm23456788@gmail.com"],
-    #     html_message="<p>Hola</p>",
-    #     fail_silently=False
-    # )
+    send_mail(
+        "Asunto SMTP",
+        "Texto plano",
+        "cm38314@gmail.com",
+        ["cm23456788@gmail.com"],
+        html_message="<p>Hola</p>",
+        fail_silently=False,
+    )
 
     context = {
         'estudiante':estudiante

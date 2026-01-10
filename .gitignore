@@ -302,3 +302,8 @@ __pycache__/
 .continue/
 .venv
 .python-version
+
+alenkura/token.json
+alenkura/credentials.json
+token.json
+credentials.json

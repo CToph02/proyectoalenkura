@@ -8,6 +8,7 @@ from paciApp.models import PaciAppModel
 from instrumentosApp.models import Indicadores, Nota
 from ped.models import PlanAsignatura
 from .forms import CursoForm, EstudianteForm, ProfesorForm
+from utils import enviar_correo_gmail
 
 # Create your views here.
 
@@ -101,17 +102,19 @@ def send_email(request, id):
 
     para = request.POST.get('para')
     cuerpo_mensaje = request.POST.get('cuerpo_mensaje')
+    asunto = request.POST.get('asunto')
     print(para)
     print(cuerpo_mensaje)
+    enviar_correo_gmail(para, asunto, cuerpo_mensaje)
 
-    send_mail(
-        "Asunto SMTP",
-        "Texto plano",
-        "cm38314@gmail.com",
-        ["cm23456788@gmail.com"],
-        html_message="<p>Hola</p>",
-        fail_silently=False,
-    )
+    # send_mail(
+    #     "Asunto SMTP",
+    #     "Texto plano",
+    #     "cm38314@gmail.com",
+    #     ["cm23456788@gmail.com"],
+    #     html_message="<p>Hola</p>",
+    #     fail_silently=False,
+    # )
 
     context = {
         'estudiante':estudiante

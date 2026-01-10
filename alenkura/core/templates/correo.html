@@ -12,21 +12,19 @@
     </div>
 
     <!-- Formulario -->
-    <form 
-        class="space-y-4" 
-        action="{% url 'coreApp:send_mail' estudiante.id %}" 
-        method="post"
-    >
+    <form class="space-y-4" action="{% url 'coreApp:send_mail' estudiante.id %}" method="post">
         {% csrf_token %}
         <div>
             <label for="Email">
+
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-200"> Email </span>
-            
+
                 <div class="relative">
-                    <input type="email" id="para" name="para"  placeholder="correo@ejemplo.com" required
+                    <input type="email" id="para" name="para" placeholder="correo@ejemplo.com" required
                         class="mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white">
-            
-                    <span class="absolute inset-y-0 right-0 grid w-8 place-content-center text-gray-700 dark:text-gray-200">
+
+                    <span
+                        class="absolute inset-y-0 right-0 grid w-8 place-content-center text-gray-700 dark:text-gray-200">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="size-4">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -36,6 +34,11 @@
                     </span>
                 </div>
             </label>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-200"> Asunto </span>
+            <div>
+                <input type="text" id="asunto" name="asunto" required
+                    class="mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white">
+            </div>
         </div>
 
         <!-- Campo Mensaje -->
@@ -43,27 +46,21 @@
             <label class="block text-sm mb-1" for="cuerpo_mensaje">
                 Mensaje:
             </label>
-            <textarea 
-                id="cuerpo_mensaje"
-                name="cuerpo_mensaje" 
-                rows="4"
-                placeholder="Escriba el contenido del correo..."
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-500 resize-y"
-            ></textarea>
+            <textarea id="cuerpo_mensaje" name="cuerpo_mensaje" rows="4"
+                placeholder="Escriba el contenido del correo..." required
+                class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-500 resize-y"></textarea>
         </div>
 
         <!-- Botón -->
         <div class="pt-2">
-            <button 
-                type="submit"
-                class="w-full bg-gray-800 hover:bg-gray-900 text-white py-2 px-4 rounded transition-colors duration-200"
-            >
+            <button type="submit"
+                class="w-full bg-gray-800 hover:bg-gray-900 text-white py-2 px-4 rounded transition-colors duration-200">
                 Enviar correo
             </button>
         </div>
-        <label for="File" class="block rounded border border-gray-300 bg-white p-4 text-gray-900 shadow-sm sm:p-6 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
-  <div class="flex items-center justify-center gap-4">
+        <!-- <label for="File"
+            class="block rounded border border-gray-300 bg-white p-4 text-gray-900 shadow-sm sm:p-6 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+            <div class="flex items-center justify-center gap-4">
     <span class="font-medium dark:text-white"> Upload your file(s) </span>
 
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -72,7 +69,7 @@
   </div>
 
   <input multiple="" type="file" id="File" class="sr-only">
-</label>
+        </label> -->
     </form>
 </div>
 

@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<div class="max-w-md mx-auto p-4 bg-gray-900 rounded">
+<div class="max-w-md mx-auto p-4 bg-gray-900 rounded-3xl">
     <!-- Información del estudiante -->
     <div class="mb-6">
         <p>
@@ -21,7 +21,7 @@
 
                 <div class="relative">
                     <input type="email" id="para" name="para" placeholder="correo@ejemplo.com" required
-                        class="mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white">
+                        class="mt-0.5 p-3 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white">
 
                     <span
                         class="absolute inset-y-0 right-0 grid w-8 place-content-center text-gray-700 dark:text-gray-200">
@@ -37,7 +37,7 @@
             <span class="text-sm font-medium text-gray-700 dark:text-gray-200"> Asunto </span>
             <div>
                 <input type="text" id="asunto" name="asunto" required
-                    class="mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white">
+                    class="mt-0.5 p-3 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white">
             </div>
         </div>
 
@@ -48,13 +48,13 @@
             </label>
             <textarea id="cuerpo_mensaje" name="cuerpo_mensaje" rows="4"
                 placeholder="Escriba el contenido del correo..." required
-                class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-gray-500 resize-y"></textarea>
+                class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:border-gray-500 resize-y"></textarea>
         </div>
 
         <!-- Botón -->
         <div class="pt-2">
             <button type="submit"
-                class="w-full bg-gray-800 hover:bg-gray-900 text-white py-2 px-4 rounded transition-colors duration-200">
+                class="w-full bg-gray-800 hover:bg-gray-900 text-white py-2 px-4 rounded-xl transition-colors duration-200">
                 Enviar correo
             </button>
         </div>

@@ -38,7 +38,7 @@
   <div class="space-y-10">
     <div data-panel="estudiantes" class="{% if active_tab != 'estudiantes' %}hidden{% endif %} space-y-6">
       <div class="grid gap-6 lg:grid-cols-2">
-        <form method="post" class="rounded-3xl border border-gray-300 dark:border-gray-200 dark:bg-gray-900/70 p-6 shadow-xl backdrop-blur">
+        <form method="post" class="rounded-3xl border border-gray-300 dark:border-gray-600 dark:bg-gray-900/70 p-6 shadow-xl backdrop-blur">
           {% csrf_token %}
           <input type="hidden" name="active_tab" value="estudiantes">
           <div class="flex items-center justify-between">
@@ -70,7 +70,7 @@
           </div>
         </form>
 
-        <div class="rounded-3xl border border-gray-300 dark:border-gray-700 dark:bg-gray-900/40 p-6 shadow-xl">
+        <div class="rounded-3xl border border-gray-300 dark:border-gray-600 dark:bg-gray-900/40 p-6 shadow-xl">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-gray-400">Resumen</p>
@@ -110,7 +110,7 @@
 
     <div data-panel="profesores" class="{% if active_tab != 'profesores' %}hidden{% endif %} space-y-6">
       <div class="grid gap-6 lg:grid-cols-2">
-        <form method="post" class="rounded-3xl border border-gray-300 dark:border-gray-700 dark:bg-gray-900/70 p-6 shadow-xl backdrop-blur">
+        <form method="post" class="rounded-3xl border border-gray-300 dark:border-gray-600 dark:bg-gray-900/70 p-6 shadow-xl backdrop-blur">
           {% csrf_token %}
           <input type="hidden" name="active_tab" value="profesores">
           <div class="flex items-center justify-between">
@@ -142,7 +142,7 @@
           </div>
         </form>
 
-        <div class="rounded-3xl border border-gray-300 dark:border-gray-700 dark:bg-gray-900/40 p-6 shadow-xl">
+        <div class="rounded-3xl border border-gray-300 dark:border-gray-600 dark:bg-gray-900/40 p-6 shadow-xl">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-gray-400">Resumen</p>
@@ -182,7 +182,7 @@
 
     <div data-panel="cursos" class="{% if active_tab != 'cursos' %}hidden{% endif %} space-y-6">
       <div class="grid gap-6 lg:grid-cols-2">
-        <form method="post" class="rounded-3xl border border-gray-300 dark:border-gray-700 dark:bg-gray-900/70 p-6 shadow-xl backdrop-blur">
+        <form method="post" class="rounded-3xl border border-gray-300 dark:border-gray-600 dark:bg-gray-900/70 p-6 shadow-xl backdrop-blur">
           {% csrf_token %}
           <input type="hidden" name="active_tab" value="cursos">
           <div class="flex items-center justify-between">
@@ -214,7 +214,7 @@
           </div>
         </form>
 
-        <div class="rounded-3xl border border-gray-300 dark:border-gray-700 dark:bg-gray-900/40 p-6 shadow-xl">
+        <div class="rounded-3xl border border-gray-300 dark:border-gray-600 dark:bg-gray-900/40 p-6 shadow-xl">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-gray-400">Resumen</p>

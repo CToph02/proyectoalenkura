@@ -10,27 +10,27 @@
 
 <body>
     <main>
-        <div class="flex flex-col items-center justify-center h-screen bg-gray-900">
-            <h1 class="text-3xl text-white mb-4 font-bold">Bienvenido a Alenkura</h1>
-            <form class="flex flex-col rounded-lg p-10 content-center shadow-2xl bg-gray-800 border-2 border-gray-700" method="post">
+        <div class="flex flex-col items-center justify-center h-screen dark:bg-gray-900">
+            <h1 class="text-3xl mb-4 font-bold">Bienvenido a Alenkura</h1>
+            <form class="flex flex-col rounded-lg p-10 content-center shadow-xl dark:bg-gray-800 border border-gray-300" method="post">
                 {% csrf_token %}
                 <div class="mb-4">
                     <label for="user">
                         <span class="text-sm font-medium text-gray-700 dark:text-gray-200"> Usuario </span>
                 
                         <input type="user" id="user" name="user"
-                            class="p-2 mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white">
+                            class="p-2 mt-0.5 w-full rounded-lg border border-gray-300 shadow-md sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white">
                     </label>
                     <label for="password">
                         <span class="text-sm font-medium text-gray-700 dark:text-gray-200"> Contraseña </span>
                 
                         <input type="password" id="password" name="password"
-                            class="p-2 mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white">
+                            class="p-2 mt-0.5 w-full rounded-lg border border-gray-300 shadow-md sm:text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white">
                     </label>
                 </div>
                 
 
-                <button class="inline-block rounded-sm bg-indigo-600 px-12 py-3 text-white hover:bg-indigo-700 cursor-pointer"
+                <button class="inline-block rounded-lg bg-indigo-600 px-12 py-3 text-white hover:bg-indigo-700 cursor-pointer"
                     type="submit">Iniciar sesión</button>
             </form>
         </div>

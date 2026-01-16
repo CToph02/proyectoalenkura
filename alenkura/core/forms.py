@@ -49,6 +49,22 @@ class EstudianteForm(BaseStyledModelForm):
             "nivel": "Nivel",
             "curso": "Curso",
         }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Iteramos sobre todos los campos del formulario
+        for field_name, field in self.fields.items():
+            # Definimos las clases de Tailwind comunes para todos los inputs
+            # bg-white: fondo blanco
+            # text-gray-900: texto oscuro
+            # border-gray-300: borde gris suave
+            # rounded-lg: bordes redondeados
+            # w-full: ancho completo
+            # p-2.5: padding interno
+            css_classes = 'bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white'
+            
+            # Agregamos las clases al widget existente
+            field.widget.attrs.update({'class': css_classes})
 
 
 class ProfesorForm(BaseStyledModelForm):
@@ -93,6 +109,15 @@ class ProfesorForm(BaseStyledModelForm):
         if commit:
             user.save()
         return user
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for field_name, field in self.fields.items():
+            css_classes = 'bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white'
+            
+            # Agregamos las clases al widget existente
+            field.widget.attrs.update({'class': css_classes})
 
 
 class CursoForm(BaseStyledModelForm):
@@ -100,6 +125,12 @@ class CursoForm(BaseStyledModelForm):
         super().__init__(*args, **kwargs)
         self.fields["sala_id"].required = False
         self.fields["sala_id"].empty_label = "Sin sala asignada"
+
+        for field_name, field in self.fields.items():
+            css_classes = 'bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white'
+            
+            # Agregamos las clases al widget existente
+            field.widget.attrs.update({'class': css_classes})
 
     class Meta:
         model = Curso
@@ -113,3 +144,5 @@ class CursoForm(BaseStyledModelForm):
             "level": "Nivel",
             "sala_id": "Sala",
         }
+
+    

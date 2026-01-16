@@ -4,7 +4,7 @@
 <div class="container mx-auto px-4 py-6">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold text-gray-800 dark:text-white">
-            Instrumento de evaluación del estudiante: <span class="text-teal-400">{{estudiante.first_name}}
+            Instrumento de evaluación del estudiante: <span class="text-blue-600 dark:text-teal-400">{{estudiante.first_name}}
                 {{estudiante.last_name}}</span>
         </h1>
     </div>
@@ -12,8 +12,8 @@
     <form action="{% url 'instrumentosApp:evaluar_estudiante' estudiante.id%}" method="POST" id="evaluacionForm">
         {% csrf_token %}
         {% for asig in asignatura %}
-        <div class="mb-8 border-b bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-            <div class="flex justify-between dark:bg-gray-700 px-6 py-4 border-b dark:border-gray-600">
+        <div class="mb-8 border border-gray-300 bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden">
+            <div class="flex justify-between dark:bg-gray-700 px-6 py-4 border-b border-gray-400 dark:border-gray-600">
                 <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200">
                     {{ asig.nombre }}
                     <span class="text-sm font-normal ml-2 text-gray-500" id="resumen_asig_{{ asig.id }}">(0
@@ -45,15 +45,15 @@
                             </td>
 
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <div class="inline-flex gap-2 bg-gray-100 dark:bg-gray-900 rounded-lg p-2" role="group">
+                                <div class="inline-flex gap-2 bg-gray-100 dark:bg-gray-900 rounded-xl p-2" role="group">
 
                                     {% for valor in "1234" %}
                                     <label class="relative flex items-center justify-center cursor-pointer group">
-                                        <input type="radio" name="{{ asig.nombre }}_puntaje_{{ indi.indicador }}"
+                                        <input type="radio" name="input_{{ indi.id }}_{{ asig.id }}"
                                             value="{{ valor }}" class="peer sr-only input-puntaje"
                                             data-indicador="{{ indi.id }}" data-asignatura="{{ asig.id }}">
-                                        <span class="w-20 h-8 flex items-center justify-center rounded-md text-sm font-medium text-gray-500 transition-all duration-150 ease-in
-                                                peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:shadow-md
+                                        <span class="w-20 h-8 flex items-center justify-center rounded-lg text-sm font-medium text-gray-500 transition-all duration-150 ease-in
+                                                peer-checked:bg-blue-400 peer-checked:text-white peer-checked:shadow-md
                                                 group-hover:text-indigo-600 peer-checked:group-hover:text-white">
                                             {{ valor }}
                                         </span>
@@ -63,7 +63,7 @@
                             </td>
                             <td class="w-80 px-6 py-4 whitespace-nowrap text-center">
                                 {# id único por indicador+asignatura #}
-                                <span id="estado_{{ indi.id }}_{{ asig.id }}"
+                                <span name="estado_{{ indi.id }}_{{ asig.id }}" id="estado_{{ indi.id }}_{{ asig.id }}"
                                     class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 transition-all duration-150 ease-in">
                                     Pendiente
                                 </span>
@@ -79,7 +79,7 @@
         {% endfor %}
 
         <div
-            class="sticky bottom-0 rounded-lg bg-white dark:bg-gray-900 border-b p-4 shadow-lg flex justify-between items-center z-10">
+            class="sticky bottom-0 rounded-lg bg-white dark:bg-gray-900 border-b border-gray-400 p-4 shadow-xl flex justify-between items-center z-10">
             <div class="text-lg font-bold text-gray-800 dark:text-white">
                 Puntaje Total Global: <span id="total_global" name="pje_total" class="text-indigo-400">0</span>
             </div>
@@ -114,10 +114,10 @@
             if (!estadoEl || Number.isNaN(valor)) return;
 
             if (valor === 4) {
-                estadoEl.className = "px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+                estadoEl.className = "px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-400 dark:bg-green-900 dark:text-green-200";
                 estadoEl.textContent = "Logrado";
             } else if (valor > 0) {
-                estadoEl.className = "px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+                estadoEl.className = "px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-400 dark:bg-yellow-900 dark:text-yellow-200";
                 estadoEl.textContent = "En Desarrollo";
             } else {
                 estadoEl.className = "px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800";

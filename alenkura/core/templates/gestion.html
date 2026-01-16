@@ -5,9 +5,9 @@
 {% block content %}
 <section class="space-y-6">
   <header class="flex flex-col gap-1">
-    <p class="text-sm uppercase tracking-wide text-indigo-300">Configuración rápida</p>
+    <p class="text-sm uppercase tracking-wide dark:text-indigo-300">Configuración rápida</p>
     <h1 class="text-3xl font-bold">Gestión de estudiantes, profesores y cursos</h1>
-    <p class="text-gray-300">Crea registros y revisa la información existente sin cambiar de página.</p>
+    <p class="dark:text-gray-300">Crea registros y revisa la información existente sin cambiar de página.</p>
   </header>
 
   {% if messages %}
@@ -38,20 +38,20 @@
   <div class="space-y-10">
     <div data-panel="estudiantes" class="{% if active_tab != 'estudiantes' %}hidden{% endif %} space-y-6">
       <div class="grid gap-6 lg:grid-cols-2">
-        <form method="post" class="rounded-xl border border-gray-700 bg-gray-900/70 p-6 shadow-xl backdrop-blur">
+        <form method="post" class="rounded-3xl border border-gray-300 dark:border-gray-200 dark:bg-gray-900/70 p-6 shadow-xl backdrop-blur">
           {% csrf_token %}
           <input type="hidden" name="active_tab" value="estudiantes">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-gray-400">Nuevo registro</p>
+              <p class="text-sm dark:text-gray-400">Nuevo registro</p>
               <h2 class="text-xl font-semibold">Crear estudiante</h2>
             </div>
-            <span class="rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-200">Paso 1</span>
+            <span class="rounded-full px-3 py-1 text-xs font-semibold bg-sky-100 dark:bg-indigo-500/20 dark:text-indigo-200">Paso 1</span>
           </div>
           <div class="mt-4 grid gap-4 md:grid-cols-2">
             {% for field in estudiante_form %}
             <div>
-              <label class="mb-1 block text-sm text-gray-300">{{ field.label }}</label>
+              <label class="mb-1 block text-sm dark:text-gray-300">{{ field.label }}</label>
               {{ field }}
               {% if field.help_text %}
               <p class="text-xs text-gray-400">{{ field.help_text }}</p>
@@ -64,13 +64,13 @@
           </div>
           <div class="mt-6 flex justify-end">
             <button type="submit"
-              class="rounded-lg bg-indigo-600 px-5 py-2 font-semibold text-white shadow-lg transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+              class="rounded-xl bg-green-600 px-5 py-2 font-semibold text-white shadow-lg transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-300">
               Crear estudiante
             </button>
           </div>
         </form>
 
-        <div class="rounded-xl border border-gray-700 bg-gray-900/40 p-6 shadow-inner">
+        <div class="rounded-3xl border border-gray-300 dark:border-gray-700 dark:bg-gray-900/40 p-6 shadow-xl">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-gray-400">Resumen</p>
@@ -78,9 +78,9 @@
             </div>
             <span class="text-xs text-gray-400">{{ estudiantes|length }} en total</span>
           </div>
-          <div class="mt-4 max-h-[28rem] overflow-auto rounded-lg border border-gray-700">
+          <div class="rounded-xl mt-4 max-h-[28rem] overflow-auto border border-gray-300 dark:border-gray-700">
             <table class="min-w-full text-sm">
-              <thead class="bg-gray-800 text-gray-200">
+              <thead class="bg-green-200 dark:bg-gray-800 dark:text-gray-200">
                 <tr class="text-left">
                   <th class="px-3 py-2">Nombre</th>
                   <th class="px-3 py-2">RUT</th>
@@ -88,9 +88,9 @@
                   <th class="px-3 py-2">Curso</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-800">
+              <tbody class="divide-y divide-gray-300 dark:divide-gray-800">
                 {% for estudiante in estudiantes %}
-                <tr class="hover:bg-gray-800/60">
+                <tr class="hover:bg-green-50 dark:hover:bg-gray-800/60">
                   <td class="px-3 py-2">{{ estudiante.first_name }} {{ estudiante.last_name }}</td>
                   <td class="px-3 py-2">{{ estudiante.rut }}</td>
                   <td class="px-3 py-2">{{ estudiante.get_nivel_display }}</td>
@@ -110,7 +110,7 @@
 
     <div data-panel="profesores" class="{% if active_tab != 'profesores' %}hidden{% endif %} space-y-6">
       <div class="grid gap-6 lg:grid-cols-2">
-        <form method="post" class="rounded-xl border border-gray-700 bg-gray-900/70 p-6 shadow-xl backdrop-blur">
+        <form method="post" class="rounded-3xl border border-gray-300 dark:border-gray-700 dark:bg-gray-900/70 p-6 shadow-xl backdrop-blur">
           {% csrf_token %}
           <input type="hidden" name="active_tab" value="profesores">
           <div class="flex items-center justify-between">
@@ -118,12 +118,12 @@
               <p class="text-sm text-gray-400">Nuevo registro</p>
               <h2 class="text-xl font-semibold">Crear profesor</h2>
             </div>
-            <span class="rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-200">Paso 2</span>
+            <span class="rounded-full px-3 py-1 text-xs font-semibold bg-sky-100 dark:bg-indigo-500/20 dark:text-indigo-200">Paso 2</span>
           </div>
           <div class="mt-4 grid gap-4 md:grid-cols-2">
             {% for field in profesor_form %}
             <div>
-              <label class="mb-1 block text-sm text-gray-300">{{ field.label }}</label>
+              <label class="mb-1 block text-sm dark:text-gray-300">{{ field.label }}</label>
               {{ field }}
               {% if field.help_text %}
               <p class="text-xs text-gray-400">{{ field.help_text }}</p>
@@ -136,13 +136,13 @@
           </div>
           <div class="mt-6 flex justify-end">
             <button type="submit"
-              class="rounded-lg bg-indigo-600 px-5 py-2 font-semibold text-white shadow-lg transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+              class="rounded-xl bg-green-600 px-5 py-2 font-semibold text-white shadow-lg transition hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-indigo-300">
               Crear profesor
             </button>
           </div>
         </form>
 
-        <div class="rounded-xl border border-gray-700 bg-gray-900/40 p-6 shadow-inner">
+        <div class="rounded-3xl border border-gray-300 dark:border-gray-700 dark:bg-gray-900/40 p-6 shadow-xl">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-gray-400">Resumen</p>
@@ -150,9 +150,9 @@
             </div>
             <span class="text-xs text-gray-400">{{ profesores|length }} en total</span>
           </div>
-          <div class="mt-4 max-h-[28rem] overflow-auto rounded-lg border border-gray-700">
+          <div class="rounded-xl mt-4 max-h-[28rem] overflow-auto border border-gray-300 dark:border-gray-700">
             <table class="min-w-full text-sm">
-              <thead class="bg-gray-800 text-gray-200">
+              <thead class="bg-green-200 dark:bg-gray-800 dark:text-gray-200">
                 <tr class="text-left">
                   <th class="px-3 py-2">Usuario</th>
                   <th class="px-3 py-2">Nombre</th>
@@ -160,9 +160,9 @@
                   <th class="px-3 py-2">Profesión</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-800">
+              <tbody class="divide-y divide-gray-300 dark:divide-gray-800">
                 {% for profesor in profesores %}
-                <tr class="hover:bg-gray-800/60">
+                <tr class="hover:bg-green-50 dark:hover:bg-gray-800/60">
                   <td class="px-3 py-2">{{ profesor.username }}</td>
                   <td class="px-3 py-2">{{ profesor.get_full_name|default:'Sin nombre' }}</td>
                   <td class="px-3 py-2">{{ profesor.email|default:'-' }}</td>
@@ -182,7 +182,7 @@
 
     <div data-panel="cursos" class="{% if active_tab != 'cursos' %}hidden{% endif %} space-y-6">
       <div class="grid gap-6 lg:grid-cols-2">
-        <form method="post" class="rounded-xl border border-gray-700 bg-gray-900/70 p-6 shadow-xl backdrop-blur">
+        <form method="post" class="rounded-3xl border border-gray-300 dark:border-gray-700 dark:bg-gray-900/70 p-6 shadow-xl backdrop-blur">
           {% csrf_token %}
           <input type="hidden" name="active_tab" value="cursos">
           <div class="flex items-center justify-between">
@@ -190,12 +190,12 @@
               <p class="text-sm text-gray-400">Nuevo registro</p>
               <h2 class="text-xl font-semibold">Crear curso</h2>
             </div>
-            <span class="rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-200">Paso 3</span>
+            <span class="rounded-full px-3 py-1 text-xs font-semibold bg-sky-100 dark:bg-indigo-500/20 dark:text-indigo-200">Paso 3</span>
           </div>
           <div class="mt-4 grid gap-4 md:grid-cols-2">
             {% for field in curso_form %}
             <div>
-              <label class="mb-1 block text-sm text-gray-300">{{ field.label }}</label>
+              <label class="mb-1 block text-sm dark:text-gray-300">{{ field.label }}</label>
               {{ field }}
               {% if field.help_text %}
               <p class="text-xs text-gray-400">{{ field.help_text }}</p>
@@ -208,13 +208,13 @@
           </div>
           <div class="mt-6 flex justify-end">
             <button type="submit"
-              class="rounded-lg bg-indigo-600 px-5 py-2 font-semibold text-white shadow-lg transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+              class="rounded-xl bg-green-600 hover:bg-green-500 dark:bg-indigo-600 px-5 py-2 font-semibold text-white shadow-lg transition dark:hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-300">
               Crear curso
             </button>
           </div>
         </form>
 
-        <div class="rounded-xl border border-gray-700 bg-gray-900/40 p-6 shadow-inner">
+        <div class="rounded-3xl border border-gray-300 dark:border-gray-700 dark:bg-gray-900/40 p-6 shadow-xl">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm text-gray-400">Resumen</p>
@@ -222,18 +222,18 @@
             </div>
             <span class="text-xs text-gray-400">{{ cursos|length }} en total</span>
           </div>
-          <div class="mt-4 max-h-[28rem] overflow-auto rounded-lg border border-gray-700">
+          <div class="rounded-xl mt-4 max-h-[28rem] overflow-auto border border-gray-300 dark:border-gray-700">
             <table class="min-w-full text-sm">
-              <thead class="bg-gray-800 text-gray-200">
+              <thead class="bg-green-200 dark:bg-gray-800 dark:text-gray-200">
                 <tr class="text-left">
                   <th class="px-3 py-2">Nombre</th>
                   <th class="px-3 py-2">Nivel</th>
                   <th class="px-3 py-2">Sala</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-800">
+              <tbody class="divide-y divide-gray-300 dark:divide-gray-800">
                 {% for curso in cursos %}
-                <tr class="hover:bg-gray-800/60">
+                <tr class="hover:bg-green-50 dark:hover:bg-gray-800/60">
                   <td class="px-3 py-2">{{ curso.name }}</td>
                   <td class="px-3 py-2">{{ curso.get_level_display }}</td>
                   <td class="px-3 py-2">{{ curso.sala_id|default:'Sin sala' }}</td>
@@ -261,7 +261,7 @@
   const setActiveTab = (tab) => {
     tabButtons.forEach((btn) => {
       const isActive = btn.dataset.tab === tab;
-      btn.className = `tab-trigger rounded-full px-5 py-2 text-sm font-semibold transition ${isActive ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`;
+      btn.className = `tab-trigger rounded-full px-5 py-2 text-sm font-semibold transition ${isActive ? 'bg-blue-600 text-white shadow-lg hover:bg-blue-700' : 'dark:bg-gray-800 hover:bg-gray-100'}`;
     });
 
     panels.forEach((panel) => {

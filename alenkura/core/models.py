@@ -96,7 +96,7 @@ class Apoderado(DateTime):
 class Estudiante(DateTime):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
-    rut = models.CharField(max_length=10, unique=True)
+    rut = models.SmallIntegerField(unique=True)
     birth_date = models.DateField()
     bapDiag = models.CharField(max_length=40)
     address = models.CharField(max_length=40)

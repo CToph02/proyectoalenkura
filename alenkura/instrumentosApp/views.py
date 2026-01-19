@@ -93,13 +93,14 @@ def evaluar(request, id):
 
     if request.method == "POST":
         for key, value in request.POST.items():
+            print(key)
             if key.startswith("csrfmiddlewaretoken"):
                 continue
 
-            if "puntaje" in key:
+            if "input" in key:
                 parts = key.split('_')
-                asignatura_nombre = parts[0]
-                indicador_nombre = parts[2]
+                asignatura_nombre = parts[3]
+                indicador_nombre = parts[4]
                 
                 # Verificación rápida
                 if indicadores_estudiante.filter(indicador=indicador_nombre).exists():
@@ -110,8 +111,6 @@ def evaluar(request, id):
         
         try:
             with transaction.atomic():
-                # ELIMINAMOS EL BUCLE "for indi in indicadores..." 
-                # No es necesario crear indicadores nuevos para guardar la nota final.
 
                 for asig_nombre, valor_nota in notas.items():
                     asig_obj = mapa_asignaturas.get(asig_nombre)
@@ -119,14 +118,11 @@ def evaluar(request, id):
                     if asig_obj:
                         # AQUÍ ESTÁ LA CORRECCIÓN CLAVE:
                         obj, created = Nota.objects.update_or_create(
-                            # 1. CRITERIOS DE BÚSQUEDA (¿Quién es?)
                             estudiante=estudiante,
                             asignatura=asig_obj,
                             
-                            # 2. VALORES A ACTUALIZAR (¿Qué dato cambia?)
                             defaults={
                                 'nota': float(valor_nota),
-                                # Recomendación: Dejar indicador en None para nota final de asignatura
                                 'indicador': None 
                             }
                         )

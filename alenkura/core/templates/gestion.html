@@ -261,7 +261,7 @@
   const setActiveTab = (tab) => {
     tabButtons.forEach((btn) => {
       const isActive = btn.dataset.tab === tab;
-      btn.className = `tab-trigger rounded-full px-5 py-2 text-sm font-semibold transition ${isActive ? 'bg-blue-600 text-white shadow-lg hover:bg-blue-700' : 'dark:bg-gray-800 hover:bg-gray-100'}`;
+      btn.className = `tab-trigger rounded-full px-5 py-2 text-sm font-semibold transition ${isActive ? 'bg-blue-600 text-white shadow-lg hover:bg-blue-700' : 'dark:bg-gray-700 hover:bg-gray-800'}`;
     });
 
     panels.forEach((panel) => {

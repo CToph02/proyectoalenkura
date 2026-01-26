@@ -39,7 +39,7 @@
         <div class="flex flex-col">
             <label class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-200" for="decreto">Decreto</label>
             <select
-                class="w-full rounded border border-gray-300 bg-white p-4 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                class="w-full rounded-xl border border-gray-300 bg-white p-4 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                 id="decreto" name="decreto" required>
                 <option value="">Selecciona un decreto</option>
                 {% for decreto in decretos %}
@@ -52,7 +52,7 @@
         <div class="flex flex-col">
             <label class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-200" for="curso">Curso</label>
             <select
-                class="w-full rounded border border-gray-300 bg-white p-4 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                class="w-full rounded-xl border border-gray-300 bg-white p-4 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                 id="curso" name="curso" required>
                 <option value="">Selecciona un curso</option>
                 {% for curso in cursos %}
@@ -68,7 +68,7 @@
         <div class="flex flex-col">
             <label class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-200" for="asignaturas">Asignaturas</label>
             <select
-                class="w-full rounded border border-gray-300 bg-white p-4 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                class="w-full rounded-xl border border-gray-300 bg-white p-4 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                 id="asignaturas" name="asignaturas" multiple required>
                 {% for asignatura in asignaturas %}
                 <option value="{{ asignatura.id }}" {% if asignatura.id in selected_asignaturas %}selected{% endif %}>
@@ -80,7 +80,7 @@
         </div>
     </section>
 
-    <section class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+    <section class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Decreto seleccionado</h3>
         <p id="decreto-seleccionado" class="mt-1 text-sm text-gray-600 dark:text-gray-300">
             {% if selected_decreto %}
@@ -98,7 +98,7 @@
         </div>
         <div id="asignaturas-contenido" class="space-y-6">
             {% for asignatura in asignaturas %}
-            <article class="space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900" data-asignatura-id="{{ asignatura.id }}" {% if asignatura.id not in selected_asignaturas %}hidden{% endif %}>
+            <article class="space-y-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900" data-asignatura-id="{{ asignatura.id }}" {% if asignatura.id not in selected_asignaturas %}hidden{% endif %}>
                 <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ asignatura.nombre }}</h3>
 
                 <div class="grid gap-6 lg:grid-cols-2">
@@ -154,7 +154,7 @@
         </div>
     </section>
 
-    <button class="inline-block rounded-sm bg-indigo-600 px-12 py-3 text-white hover:bg-indigo-700" type="submit">
+    <button class="inline-block rounded-lg bg-indigo-600 px-12 py-3 text-white hover:bg-indigo-700" type="submit">
         Guardar formulario PED
     </button>
 </form>
@@ -164,7 +164,7 @@
     <h2 class="mb-4 text-2xl font-semibold text-gray-900 dark:text-white">Planes PED creados</h2>
 
     {% if planes %}
-    <div class="max-h-100 overflow-x-auto rounded border border-gray-300 shadow-sm dark:border-gray-600">
+    <div class="max-h-100 overflow-x-auto rounded-xl border border-gray-300 shadow-sm dark:border-gray-600">
         <table class="min-w-full divide-y-2 divide-gray-200 dark:divide-gray-700">
             <thead class="text-left">
                 <tr class="*:font-medium *:text-gray-900 dark:*:text-white">
@@ -176,7 +176,7 @@
                     <th class="px-3 py-2 whitespace-nowrap">Acciones</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 dark:bg-gray-900">
                 {% for plan in planes %}
                 <tr class="*:text-gray-900 *:first:font-medium dark:*:text-white">
                     <td class="px-3 py-2 whitespace-nowrap">#{{ plan.id }}</td>
@@ -192,14 +192,14 @@
                     <td class="px-3 py-2 whitespace-nowrap">{{ plan.plan_asignaturas.count }}</td>
                     <td class="px-3 py-2 whitespace-nowrap">
                         <div class="flex flex-wrap gap-2">
-                            <a class="inline-block rounded-sm bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700"
+                            <a class="inline-block rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
                                 href="{% url 'ped:plan_pdf' plan.id %}" download>
                                 Descargar
                             </a>
                             <form method="post" action="{% url 'ped:plan_eliminar' plan.id %}" class="inline">
                                 {% csrf_token %}
                                 <button type="submit"
-                                    class="inline-flex items-center rounded-sm bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-700"
+                                    class="inline-flex items-center rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700"
                                     onclick="return confirm('¿Seguro que deseas eliminar el Plan #{{ plan.id }}?');">
                                     Eliminar
                                 </button>

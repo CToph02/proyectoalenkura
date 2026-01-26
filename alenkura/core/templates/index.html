@@ -2,4 +2,15 @@
 
 {% block content %}
 <p class="text-2xl">Bienvenido al dashboard Alenkura</p>
+
+<div class="mt-2 rounded-xl border border-green-600 bg-green-400 w-60 h-40 p-2 text-center">
+    <p>Cantidad de estudiantes</p>
+    <p class="text-2xl font-semibold">{{estudiantes | length}}</p>
+</div>
+
+<div class="mt-2 rounded-xl border border-green-600 bg-green-400 w-60 h-40 p-2 text-center">
+    <p>Cantidad de Docentes</p>
+    <p class="text-2xl font-semibold">{{users | length}}</p>
+</div>
+
 {% endblock %}

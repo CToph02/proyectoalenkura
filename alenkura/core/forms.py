@@ -61,7 +61,7 @@ class EstudianteForm(BaseStyledModelForm):
             # rounded-lg: bordes redondeados
             # w-full: ancho completo
             # p-2.5: padding interno
-            css_classes = 'bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white'
+            css_classes = 'bg-white border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white'
             
             # Agregamos las clases al widget existente
             field.widget.attrs.update({'class': css_classes})

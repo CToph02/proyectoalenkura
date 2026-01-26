@@ -2,7 +2,7 @@
 
 {% block content %}
 <div>
-    <h1 class="text-2xl font-bold mb-4">Notas del estudiante {{ estudiante.first_name }} {{ estudiante.last_name }}</h1>
+    <h1 class="text-2xl font-bold mb-4">Notas del estudiante: {{ estudiante.first_name }} {{ estudiante.last_name }}</h1>
 
     <div class="shadow-xl overflow-hidden border border-gray-300 dark:border-gray-700 rounded-3xl">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -38,6 +38,9 @@
             </tbody>
 
         </table>
+    </div>
+    <div class="shadow-xl overflow-hidden mt-4 p-4 bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-3xl">
+        <p>Promedio final: <span class="text-blue-600">{{promedio}}</span></p>
     </div>
 </div>
 {% endblock %}

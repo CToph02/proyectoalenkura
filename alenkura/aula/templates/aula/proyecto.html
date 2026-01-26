@@ -31,11 +31,11 @@
 
 <div class="mb-6 flex flex-wrap items-center gap-3">
   <button type="button" data-panel-btn="crear"
-    class="panel-btn inline-flex items-center gap-3 rounded-xl px-6 py-3 text-base font-semibold transition">
+    class="panel-btn inline-flex items-center gap-3 rounded-lg px-6 py-3 text-base font-semibold transition">
     Crear proyecto de aula
   </button>
   <button type="button" data-panel-btn="listar"
-    class="panel-btn inline-flex items-center gap-3 rounded-xl px-6 py-3 text-base font-semibold transition">
+    class="panel-btn inline-flex items-center gap-3 rounded-lg px-6 py-3 text-base font-semibold transition">
     Ver proyectos de aula creados
   </button>
 </div>
@@ -44,7 +44,7 @@
 <form method="post" class="space-y-10" id="proyecto_form">
   {% csrf_token %}
   <input type="hidden" name="gantt_data" id="gantt_data" value="">
-  <section class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+  <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
     <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">Datos generales</h2>
     <div class="space-y-6">
       <div class="grid gap-6 md:grid-cols-2">
@@ -94,7 +94,7 @@
     </div>
   </section>
 
-  <section class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+  <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
     <div class="mb-4 text-center">
       <p class="text-sm uppercase tracking-wide text-indigo-400">Objetivos curriculares fundamentales del proyecto de aula</p>
       <h3 class="text-2xl font-semibold text-gray-900 dark:text-white">Define los objetivos</h3>
@@ -183,7 +183,7 @@
               class="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
           </div>
           <button type="button" id="gantt_generar"
-            class="self-end rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700">
+            class="self-end rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700">
             Generar semanas
           </button>
         </div>
@@ -210,7 +210,7 @@
 
   <div class="flex justify-end">
     <button type="submit"
-      class="inline-flex items-center gap-2 rounded bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700">
+      class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700">
       Guardar proyecto de aula
     </button>
   </div>
@@ -430,7 +430,7 @@
   })();
 </script>
 
-<section id="panel-listar" class="mt-12 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900 {% if active_panel != 'listar' %}hidden{% endif %}">
+<section id="panel-listar" class="mt-12 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900 {% if active_panel != 'listar' %}hidden{% endif %}">
   <h4 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Proyectos creados recientemente</h4>
   <div class="overflow-x-auto">
     <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
@@ -451,11 +451,11 @@
           <td class="px-3 py-2">
             <div class="flex items-center justify-center gap-2">
               <a href="{% url 'aula:proyecto_pdf' proyecto.id %}"
-                class="inline-flex items-center gap-1 rounded-md border border-indigo-200 bg-white px-3 py-2 text-xs font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-50 dark:border-indigo-700 dark:bg-gray-900 dark:text-indigo-200 dark:hover:bg-indigo-800/40">
+                class="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-50 dark:border-indigo-700 dark:bg-gray-900 dark:text-indigo-200 dark:hover:bg-indigo-800/40">
                 Descargar
               </a>
               <button type="button" data-proyecto="{{ proyecto.id }}" data-url="{% url 'aula:proyecto_delete' proyecto.id %}"
-                class="open-delete-modal inline-flex items-center gap-1 rounded-md border border-rose-200 bg-white px-3 py-2 text-xs font-semibold text-rose-700 shadow-sm transition hover:bg-rose-50 dark:border-rose-700 dark:bg-gray-900 dark:text-rose-200 dark:hover:bg-rose-800/40">
+                class="open-delete-modal inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs font-semibold text-rose-700 shadow-sm transition hover:bg-rose-50 dark:border-rose-700 dark:bg-gray-900 dark:text-rose-200 dark:hover:bg-rose-800/40">
                 Eliminar
               </button>
             </div>

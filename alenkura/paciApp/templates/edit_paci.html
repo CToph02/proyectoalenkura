@@ -1,0 +1,13 @@
+{% extends 'base.html'%}
+
+{% block content %}
+<form action="" method="post" class="flex flex-col">
+    {% for item in paci %}
+    <p>Indicadores de la asignatura: {{item.subject}}</p>
+        {% for ind in item.indicadores_paci.all%}
+            <input type="text" value="{{ind}}">
+        {% endfor %}
+    {% endfor %}
+    <button type="submit" class="rounded-lg bg-green-600 w-40 p-2 mt-4">Editar</button>
+</form>
+{% endblock %}

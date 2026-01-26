@@ -1,11 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, render, get_object_or_404
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Avg
+from django.contrib.admin.views.decorators import staff_member_required
 
 from .models import Curso, Estudiante
 from paciApp.models import PaciAppModel
-from instrumentosApp.models import Indicadores, Nota
+from instrumentosApp.models import Indicadores_instrumento, Nota
 from ped.models import PlanAsignatura
 from .forms import CursoForm, EstudianteForm, ProfesorForm
 from utils import enviar_correo_gmail
@@ -39,7 +40,7 @@ def estudiantes_view(request):
     }
     return render(request, 'estudiantes.html', context)
 
-
+@staff_member_required
 def gestion_view(request):
     active_tab = request.GET.get('tab', 'estudiantes')
     User = get_user_model()
@@ -98,23 +99,25 @@ def gestion_view(request):
 def send_email(request, id):
     from django.core.mail import send_mail
     estudiante = get_object_or_404(Estudiante, pk=id)
-    PaciAppModel.objects.filter(student=estudiante)
+    nombre_estudiante = estudiante.first_name + " " + estudiante.last_name
+    notas = Nota.objects.filter(estudiante=estudiante.id)
+    #PaciAppModel.objects.filter(student=estudiante)
+    txt_notas = f"""
+
+Notas del estudiante: {nombre_estudiante}\n
+"""
+    for nota in notas:
+        txt_notas += f"- {nota.asignatura}: {nota}\n"
+    
+    promedio_final = notas.aggregate(promedio=Avg('nota'))
+    
+    txt_notas += f"\nPromedio: {round(promedio_final['promedio'], 1)}"
 
     para = request.POST.get('para')
-    cuerpo_mensaje = request.POST.get('cuerpo_mensaje')
+    cuerpo_mensaje = request.POST.get('cuerpo_mensaje', '')
     asunto = request.POST.get('asunto')
-    print(para)
-    print(cuerpo_mensaje)
-    enviar_correo_gmail(para, asunto, cuerpo_mensaje)
-
-    # send_mail(
-    #     "Asunto SMTP",
-    #     "Texto plano",
-    #     "cm38314@gmail.com",
-    #     ["cm23456788@gmail.com"],
-    #     html_message="<p>Hola</p>",
-    #     fail_silently=False,
-    # )
+    mensaje = cuerpo_mensaje + txt_notas
+    enviar_correo_gmail(para, asunto, mensaje)
 
     context = {
         'estudiante':estudiante

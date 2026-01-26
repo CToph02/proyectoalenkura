@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-
 class User(AbstractUser):
     class Roles(models.TextChoices):
         ADMIN = 'ADMIN', 'Administrador'
@@ -15,7 +14,7 @@ class User(AbstractUser):
     phone = models.IntegerField(blank=True, null=True)
     address = models.CharField(max_length=255, blank=True)
     birth_date = models.DateField(null=True, blank=True)
-    #photo = models.ImageField(upload_to='user_photos/', null=True, blank=True)
+    #nro_registro = models.CharField(max_length=20)
 
     def __str__(self) -> str:
         full_name = self.get_full_name().strip()

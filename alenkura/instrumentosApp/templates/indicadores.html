@@ -4,7 +4,8 @@
 <div class="container">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800 dark:text-white">
-            Instrumento de evaluación del estudiante: <span class="text-blue-600 dark:text-teal-400">{{estudiante.first_name}}
+            Instrumento de evaluación del estudiante: <span
+                class="text-blue-600 dark:text-teal-400">{{estudiante.first_name}}
                 {{estudiante.last_name}}</span>
         </h1>
     </div>
@@ -12,68 +13,153 @@
     <form action="{% url 'instrumentosApp:evaluar_estudiante' estudiante.id%}" method="POST" id="evaluacionForm">
         {% csrf_token %}
         {% for asig in asignatura %}
-        <div class="mb-8 border border-gray-300 bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden">
-            <div class="flex justify-between dark:bg-gray-700 px-6 py-4 border-b border-gray-400 dark:border-gray-600">
+        <div
+            class="mb-8 border border-gray-400 bg-gray-50 dark:border-gray-600 dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden">
+            <div class="flex justify-between dark:bg-gray-700 px-6 py-4 dark:border-gray-600">
                 <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200">
                     {{ asig.nombre }}
                     <span class="text-sm font-normal ml-2 text-gray-500" id="resumen_asig_{{ asig.id }}">(0
                         puntos)</span>
                 </h2>
+                <div class="flex flex-col">
+                    <p>Selecione objetivo adecuado</p>
+                <select name="" id="" class="w-100 rounded-xl border border-gray-300 bg-white p-4 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white" multiple>
+                    {% for paci in asig.paci_estudiante %}
+                        {% for indi in paci.indicadores %}
+                        <option value="{{indi.id}}" indicador-nombre="{{indi.indicador}}">{{ indi.indicador }}</option>
+                        {% endfor %}
+                    {% endfor %}
+                </select>
+                </div>
+                
+                <div class="flex flex-col">
+                    <label class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-200"
+                        for="asignaturas">Indicadores P.A.C.I.</label>
+                    <select
+                        class="w-100 rounded-xl border border-gray-300 bg-white p-4 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                        id="select_indicadores_{{asig.nombre}}" name="indicadores" multiple>
+                        {% for paci in asig.paci_estudiante %}
+                        {% for indi in paci.indicadores %}
+                        <option value="{{indi.id}}" indicador-nombre="{{indi.indicador}}">{{ indi.indicador }}</option>
+                        {% endfor %}
+                        {% endfor %}
+                    </select>
+
+                </div>
             </div>
+            <section class="dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700">
+                <label>Agregue indicadores para {{ asig.nombre }}</label>
+                <div>
+                    <div class="flex gap-4 h-10">
+                        <input type="text"
+                            class="input-nuevo-indicador border border-gray-400 dark:border-gray-600 rounded p-2 w-full"
+                            placeholder="Nuevo indicador...">
+                        <button type="button"
+                            class="btn-add-indicador flex items-center text-center rounded bg-indigo-600 px-4 text-white hover:bg-indigo-700">
+                            Agregar
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="size-6 ml-2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                        </button>
+                    </div>
+
+                </div>
+            </section>
 
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-900">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Indicador</th>
-                            <th
-                                class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/2">
-                                Evaluación (1-4)</th>
-                            <th
-                                class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Estado</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Indicador</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Evaluación
+                                (1-4)</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Estado</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acción</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                        {% for paci in asig.paci_estudiante %}
-                        {% for indi in paci.indicadores %}
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                            <td class="w-80 px-6 py-4 text-sm text-gray-900 dark:text-gray-300" name="indi_{{asig.nombre}}">
-                                {{ indi.indicador }}
-                                <!-- <input type="text" hidden name="indicador_{{ indi.id }}_{{asig.nombre}}"> -->
+                    <tbody id="contenedor_indicadores_{{ asig.id }}"
+                        class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                    </tbody>
+                    <!-- <template class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700" id="template-fila-evaluacion">
+                {% for paci in asig.paci_estudiante %}
+                {% for indi in paci.indicadores %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <td class="w-80 px-6 py-4 text-sm text-gray-900 dark:text-gray-300" name="indi_{{asig.nombre}}">
+                        {{ indi.indicador }}
+                    </td>
+
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <div class="inline-flex gap-2 bg-gray-100 dark:bg-gray-900 rounded-xl p-2" role="group">
+
+                            {% for valor in "1234" %}
+                            <label class="relative flex items-center justify-center cursor-pointer group">
+                                <input type="radio" name="input_{{ indi.id }}_{{ asig.id }}_{{asig.nombre}}_{{indi.indicador}}"
+                                    value="{{ valor }}" class="peer sr-only input-puntaje"
+                                    data-indicador="{{ indi.id }}" data-asignatura="{{ asig.id }}">
+                                <span class="w-20 h-8 flex items-center justify-center rounded-lg text-sm font-medium text-gray-500 transition-all duration-150 ease-in
+                                        peer-checked:bg-blue-400 peer-checked:text-white peer-checked:shadow-md
+                                        group-hover:text-indigo-600 peer-checked:group-hover:text-white">
+                                    {{ valor }}
+                                </span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td class="w-80 px-6 py-4 whitespace-nowrap text-center">
+                        {# id único por indicador+asignatura #}
+                        <span name="estado_{{ indi.id }}_{{ asig.id }}" id="estado_{{ indi.id }}_{{ asig.id }}"
+                            class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 transition-all duration-150 ease-in">
+                            Pendiente
+                        </span>
+                    </td>
+                </tr>
+
+                {% endfor %}
+                {% endfor %}
+            </template> -->
+                    <template id="template-fila-evaluacion">
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors fila-indicador">
+                            <td class="w-80 px-6 py-4 text-sm text-gray-900 dark:text-gray-300">
+                                <input type="text" class="nombre-indicador border border-gray-600 rounded p-4 text-base">
                             </td>
 
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <div class="inline-flex gap-2 bg-gray-100 dark:bg-gray-900 rounded-xl p-2" role="group">
-
+                                <div
+                                    class="inline-flex gap-2 bg-gray-100 dark:bg-gray-900 rounded-xl p-2 contenedor-radios">
                                     {% for valor in "1234" %}
                                     <label class="relative flex items-center justify-center cursor-pointer group">
-                                        <input type="radio" name="input_{{ indi.id }}_{{ asig.id }}_{{asig.nombre}}_{{indi.indicador}}"
-                                            value="{{ valor }}" class="peer sr-only input-puntaje"
-                                            data-indicador="{{ indi.id }}" data-asignatura="{{ asig.id }}">
+                                        <input type="radio" value="{{ valor }}" class="peer sr-only radio-puntaje">
                                         <span class="w-20 h-8 flex items-center justify-center rounded-lg text-sm font-medium text-gray-500 transition-all duration-150 ease-in
-                                                peer-checked:bg-blue-400 peer-checked:text-white peer-checked:shadow-md
-                                                group-hover:text-indigo-600 peer-checked:group-hover:text-white">
+                                        peer-checked:bg-blue-400 peer-checked:text-white peer-checked:shadow-md
+                                        group-hover:text-indigo-600 peer-checked:group-hover:text-white">
                                             {{ valor }}
                                         </span>
                                     </label>
                                     {% endfor %}
                                 </div>
                             </td>
-                            <td class="w-80 px-6 py-4 whitespace-nowrap text-center">
-                                {# id único por indicador+asignatura #}
-                                <span name="estado_{{ indi.id }}_{{ asig.id }}" id="estado_{{ indi.id }}_{{ asig.id }}"
-                                    class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 transition-all duration-150 ease-in">
+
+                            <td class="w-40 px-6 py-4 whitespace-nowrap text-center">
+                                <span
+                                    class="estado-pill px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 transition-all duration-150 ease-in">
                                     Pendiente
                                 </span>
                             </td>
+                            <td class="px-6 py-4 text-center">
+                                <button type="button" class="btn-eliminar text-red-500 hover:text-red-700 font-bold cursor-pointer">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </td>
                         </tr>
-
-                        {% endfor %}
-                        {% endfor %}
-                    </tbody>
+                    </template>
                 </table>
+                <input type="hidden" name="json_asig_{{ asig.id }}" id="input_json_{{ asig.id }}"
+                    class="input-json-indicadores">
             </div>
         </div>
         {% endfor %}
@@ -96,86 +182,142 @@
     </form>
 
 </div>
-
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    (function () {
+        document.addEventListener('DOMContentLoaded', function () {
+            const asignaturasData = JSON.parse('{{ asignaturas|safe }}');
+            const template = document.getElementById('template-fila-evaluacion')
 
-        const form = document.getElementById('evaluacionForm');
+            asignaturasData.forEach(asig => {
+                const asigNombre = asig.nombre;
+                const asigId = asig.id
+                const select = document.getElementById(`select_indicadores_${asigNombre}`);
+                const contenedor = document.getElementById(`contenedor_indicadores_${asigId}`);
+                //const tbody = document.getElementById(`tbody_${asigId}`);
+            
+                const inputJson = document.getElementById(`input_json_${asigId}`);
+                const wrapperAsig = inputJson.closest('.mb-8'); // Sube al contenedor de la asignatura
+                
+                const inputNuevoIndicador = wrapperAsig.querySelector('.input-nuevo-indicador');
+                const btnAdd = wrapperAsig.querySelector('.btn-add-indicador');
 
-        function updateRowStatusByName(name, value) {
+                if (!select || !contenedor || !template) return;
 
-            const partes = name.split('_');
-            const idIndicador = partes[1] || null;
-            const asigId = partes[2] || null;
-            if (!idIndicador || !asigId) return;
+                select.addEventListener('change', (e) => {
+                    const seleccionados = Array.from(e.target.selectedOptions);
 
-            const estadoEl = document.getElementById(`estado_${idIndicador}_${asigId}`);
-            const valor = parseInt(value, 10);
-            if (!estadoEl || Number.isNaN(valor)) return;
+                    seleccionados.forEach(opt => {
+                        const indiId = opt.value;
+                        const indiNombre = opt.text;
+                        const filaId = `fila_${asigId}_${indiId}`;
 
-            if (valor === 4) {
-                estadoEl.className = "px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-400 dark:bg-green-900 dark:text-green-200";
-                estadoEl.textContent = "Logrado";
-            } else if (valor > 0) {
-                estadoEl.className = "px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-400 dark:bg-yellow-900 dark:text-yellow-200";
-                estadoEl.textContent = "En Desarrollo";
-            } else {
-                estadoEl.className = "px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800";
-                estadoEl.textContent = "Pendiente";
-            }
-        }
+                        if (!document.getElementById(filaId)) {
+                            crearFilaEvaluacion(asigNombre, asigId, indiId, indiNombre, filaId, template, contenedor);
+                        }
+                    });
+                });
 
-        function calculateTotals() {
-            let globalTotal = 0;
-            const asignaturasMap = {};
+                const agregarIndicador = () => {
+                    const texto = inputNuevoIndicador.value.trim();
 
-            document.querySelectorAll('[id^="resumen_asig_"]').forEach(el => el.textContent = '(0 puntos)');
+                    if (texto !== "") {
+                        // Generamos un ID temporal para indicadores manuales
+                        const nuevoIdManual = 'manual_' + Date.now();
+                        const filaIdManual = `fila_${asigId}_${nuevoIdManual}`;
 
-            document.querySelectorAll('.input-puntaje:checked').forEach(input => {
-                const val = parseInt(input.value, 10);
-                const asigId = input.dataset.asignatura;
+                        crearFilaEvaluacion(asigNombre, asigId, nuevoIdManual, texto, filaIdManual, template, contenedor);
 
-                if (Number.isNaN(val)) return;
-                if (!asigId) {
-                    console.warn('input sin data-asignatura', input);
-                    return;
+                        inputNuevoIndicador.value = "";
+                        // Actualizamos el JSON porque es un elemento nuevo
+                        actualizarJsonAsignatura(asigId);
+                    }
                 }
-
-                globalTotal += val;
-                asignaturasMap[asigId] = (asignaturasMap[asigId] || 0) + val;
-            });
-
-            // actualizar global
-            const totalGlobalEl = document.getElementById('total_global');
-            if (totalGlobalEl) totalGlobalEl.textContent = globalTotal;
-
-            // actualizar por asignatura
-            for (const [asigId, puntaje] of Object.entries(asignaturasMap)) {
-                const label = document.getElementById(`resumen_asig_${asigId}`);
-                if (label) label.textContent = `(${puntaje} puntos)`;
-                else console.warn('Label de resumen faltante para asignatura', asigId);
-            }
-
-            console.debug('calculateTotals -> global:', globalTotal, 'porAsignatura:', asignaturasMap);
-        }
-
-        if (form) {
-            form.addEventListener('change', function (e) {
-                const target = e.target;
-                if (!target) return;
-                if (target.classList && target.classList.contains('input-puntaje')) {
-
-                    updateRowStatusByName(target.name, target.value);
-
-                    calculateTotals();
+                if (inputNuevoIndicador) {
+                    inputNuevoIndicador.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            agregarIndicador();
+                        }
+                    });
                 }
             });
-        }
 
-        document.querySelectorAll('.input-puntaje:checked').forEach(input => {
-            updateRowStatusByName(input.name, input.value);
+            
+
+            function crearFilaEvaluacion(asigNombre, asigId, indiId, indiNombre, filaId, template, contenedor) {
+                const clone = template.content.cloneNode(true);
+                const tr = clone.querySelector('.fila-indicador');
+
+                tr.id = filaId;
+                tr.setAttribute('data-asig-id', asigId);
+                tr.setAttribute('data-indi-id', indiId);
+
+                // 1. Nombre del indicador
+                tr.querySelector('.nombre-indicador').value = indiNombre;
+
+                // 2. Configurar Radios (Group Name único por fila)
+                const radioGroupName = `puntaje_${asigNombre}_${indiNombre}`;
+                const radios = tr.querySelectorAll('.radio-puntaje');
+                const estadoPill = tr.querySelector('.estado-pill');
+
+                radios.forEach(radio => {
+                    radio.name = radioGroupName;
+                    radio.addEventListener('change', (e) => {
+                        actualizarEstado(e.target.value, estadoPill);
+                        actualizarJsonAsignatura(asigId);
+                        calcularTotalGlobal();
+                    });
+                });
+
+                // 3. Botón Eliminar
+                tr.querySelector('.btn-eliminar').onclick = () => {
+                    tr.remove();
+                    actualizarJsonAsignatura(asigId);
+                    calcularTotalGlobal();
+                };
+
+                contenedor.appendChild(clone);
+            }
+
+            function actualizarEstado(valor, pill) {
+                const v = parseInt(valor);
+                pill.className = "px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full transition-all";
+                if (v === 4) {
+                    pill.classList.add('bg-green-400', 'dark:bg-green-900', 'dark:text-white');
+                    pill.textContent = "Logrado";
+                } else if (v > 0) {
+                    pill.classList.add('bg-orange-400', 'text-black');
+                    pill.textContent = "En Desarrollo";
+                } else {
+                    pill.classList.add('bg-gray-400', 'text-gray-800');
+                    pill.textContent = "Pendiente";
+                }
+            }
+
+            function actualizarJsonAsignatura(asigId) {
+                const contenedor = document.getElementById(`contenedor_indicadores_${asigId}`);
+                const inputHidden = document.getElementById(`input_json_${asigId}`);
+                const filas = contenedor.querySelectorAll('.fila-indicador');
+
+                const data = Array.from(filas).map(f => {
+                    const checked = f.querySelector('.radio-puntaje:checked');
+                    return {
+                        indicador_id: f.getAttribute('data-indi-id'),
+                        puntaje: checked ? checked.value : 0
+                    };
+                });
+
+                inputHidden.value = JSON.stringify(data);
+            }
+
+            function calcularTotalGlobal() {
+                let total = 0;
+                document.querySelectorAll('.radio-puntaje:checked').forEach(r => {
+                    total += parseInt(r.value);
+                });
+                document.getElementById('total_global').textContent = total;
+            }
         });
-        calculateTotals();
-    });
+    })();
 </script>
 {% endblock %}

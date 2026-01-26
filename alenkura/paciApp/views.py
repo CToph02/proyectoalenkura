@@ -7,9 +7,9 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
 from core.models import Estudiante, Asignatura, Eje, Objetivos, Estrategias
 from accounts.models import User
-from .models import PaciAppModel, Indicador
+from .models import PaciAppModel, Indicador_paci
 import json
-
+import ast
 
 try:  # pragma: no cover - import guard for optional dependency
     from reportlab.lib import colors
@@ -90,8 +90,14 @@ def create_paci(request, id):
                             continue
 
                         # Procesar estrategias (lista a string)
-                        estrategias_lista = request.POST.getlist(key_estrategias)
-                        estrategias_str = ", ".join(estrategias_lista)
+                        estrategias = request.POST.getlist(key_estrategias)
+                        estrategias_lista = []
+                        print(asig.nombre)
+                        for item in estrategias:
+                            text = item.replace('est', '').replace(',', '').replace('_', '').replace(asig.nombre, '').strip()
+                            estrategias_lista.append(text)
+                        print(estrategias)
+                        #estrategias_str = ", ".join(estrategias_lista)
 
                         # Buscamos la instancia del Eje para la Foreign Key
                         eje_instancia = get_object_or_404(Eje, pk=eje_id)
@@ -104,7 +110,7 @@ def create_paci(request, id):
                             axis=eje_instancia,  # Aquí asignamos el eje
                             objetivo_general=objetivo,
                             adecuacion_curricular=adecuacion,
-                            estrategias=estrategias_str
+                            estrategias=estrategias_lista
                         )
 
                         # Procesar Indicadores (vienen como JSON string desde el JS)
@@ -118,7 +124,7 @@ def create_paci(request, id):
                                 for texto_indicador in indicadores_lista:
                                     if texto_indicador.strip():
                                         # Usamos el modelo Indicador (singular)
-                                        Indicador.objects.create(
+                                        Indicador_paci.objects.create(
                                             indicador=texto_indicador,
                                             paci=paci
                                         )
@@ -132,6 +138,42 @@ def create_paci(request, id):
             return HttpResponse(f"Error al guardar: {e}", status=500)
 
     return redirect('coreApp:estudiantes')
+
+def edit_paci(request, id):
+    pass
+
+def paci(request, id):
+    estudiante = get_object_or_404(Estudiante, id=id)
+    
+    asignaturas = Asignatura.objects.prefetch_related('ejes').all()
+
+    asignaturas_data = []
+    for asignatura in asignaturas:
+        
+        ejes_list = list(asignatura.ejes.all().values('id', 'nombre'))
+        asignaturas_data.append({
+            'id': asignatura.id,
+            'nombre': asignatura.nombre,
+            'ejes': ejes_list
+        })
+    paci = PaciAppModel.objects.filter(
+            student=estudiante.id
+        ).select_related(
+            'profesor', 'student', 'subject', 'axis'
+        ).prefetch_related(
+            'indicadores_paci'
+        )
+    
+    context = {
+        'estudiante': estudiante,
+        'asignaturas_json': json.dumps(asignaturas_data),
+        'asignaturas': asignaturas,
+        'objetivos': Objetivos.objects.all(),
+        'estrategias': Estrategias.objects.all(),
+        'paci':paci
+    }
+
+    return render(request, 'edit_paci.html', context)
 
 def pdf_paci(request, id):
     estudiante = get_object_or_404(Estudiante, id=id)
@@ -246,46 +288,55 @@ def pdf_paci(request, id):
 
     story.append(build_paragraph("II. Propuesta curricular:"))
     story.append(Spacer(1, 6))
-    # 1. Definimos el encabezado de la tabla (6 Columnas)
+    
     table_data = [
         [
             Paragraph("Asignatura", body_style),
             Paragraph("Eje", body_style),
             Paragraph("Objetivo", body_style),
             Paragraph("Adecuación", body_style),
-            Paragraph("Indicadores", body_style), # <--- Columna 5
-            Paragraph("Estrategias", body_style), # <--- Columna 6
+            Paragraph("Indicadores", body_style),
+            Paragraph("Estrategias", body_style),
         ]
     ]
-
-    # 2. Iteramos SOLO sobre los objetos PACI (Ya tienen todo vinculado)
+    
     for item_paci in paci:
-        
-        # A. Procesamos los indicadores para ponerlos en una sola celda
-        # Obtenemos los indicadores relacionados a este item específico
         lista_indicadores = []
         for ind in item_paci.indicadores_paci.all():
             lista_indicadores.append(f"• {ind.indicador}")
         
-        # Los unimos con saltos de línea HTML (<br/>) para el Paragraph
-        texto_indicadores = "\n".join(lista_indicadores) if lista_indicadores else "Sin indicadores"
+        lista_estrategias = []
+    
+        raw_texto = item_paci.estrategias or ""
 
-        # B. Construimos la fila (Debe tener 6 elementos, igual que el encabezado)
+        try:
+            datos_convertidos = ast.literal_eval(raw_texto)
+            
+            if isinstance(datos_convertidos, list):
+                for est in datos_convertidos:
+                    lista_estrategias.append(f"• {est}")
+            else:
+                lista_estrategias.append(f"• {str(datos_convertidos)}")
+                
+        except (ValueError, SyntaxError):
+            if raw_texto.strip():
+                lista_estrategias.append(f"• {raw_texto}")
+        
+        texto_indicadores = "\n".join(lista_indicadores) if lista_indicadores else "Sin indicadores"
+        texto_estrategias = "\n".join(lista_estrategias) if lista_estrategias else "Sin estrategias"
         row = [
             build_paragraph(item_paci.subject.nombre if item_paci.subject else "Sin Asignatura"),
             build_paragraph(item_paci.axis.nombre if item_paci.axis else "Sin Eje"),
             build_paragraph(item_paci.objetivo_general),
             build_paragraph(item_paci.adecuacion_curricular),
-            build_paragraph(texto_indicadores),     # <--- Aquí van los indicadores procesados
-            build_paragraph(item_paci.estrategias),
+            build_paragraph(texto_indicadores),
+            build_paragraph(texto_estrategias),
         ]
         table_data.append(row)
-
-    # 3. Configuración de la Tabla
-    # IMPORTANTE: colWidths debe tener 6 valores y sumar aprox 540 (ancho carta - márgenes)
+        
     main_table = Table(
         table_data,
-        colWidths=[70, 70, 100, 100, 100, 100], # Ajustado para 6 columnas
+        colWidths=[70, 70, 100, 100, 100, 100],
         repeatRows=1,
     )
 

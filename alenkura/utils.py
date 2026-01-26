@@ -10,10 +10,10 @@ def enviar_correo_gmail(destinatario, asunto, mensaje_texto):
     Envía un correo usando la API de Gmail y el archivo token.json
     """
     SCOPES = ['https://www.googleapis.com/auth/gmail.send']
-    
+
     # Ruta absoluta al token.json (asegúrate que esté en la raíz o ajusta la ruta)
     # BASE_DIR debe estar importado de settings o usar os.getcwd() si está en raíz
-    token_path = 'token.json' 
+    token_path = 'alenkura/token.json' 
 
     if not os.path.exists(token_path):
         print("No se encontró el archivo token.json")
@@ -27,7 +27,7 @@ def enviar_correo_gmail(destinatario, asunto, mensaje_texto):
         message = MIMEText(mensaje_texto)
         message['to'] = destinatario
         message['subject'] = asunto
-        
+
         # Codificación necesaria para Gmail API (Base64 URL Safe)
         raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
         body = {'raw': raw_message}

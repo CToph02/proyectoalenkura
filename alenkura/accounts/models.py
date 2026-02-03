@@ -14,7 +14,7 @@ class User(AbstractUser):
     phone = models.IntegerField(blank=True, null=True)
     address = models.CharField(max_length=255, blank=True)
     birth_date = models.DateField(null=True, blank=True)
-    #nro_registro = models.CharField(max_length=20)
+    nro_registro = models.CharField(max_length=20, null=True)
 
     def __str__(self) -> str:
         full_name = self.get_full_name().strip()

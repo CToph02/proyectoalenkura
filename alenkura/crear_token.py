@@ -7,6 +7,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 # Si cambias estos permisos, debes eliminar el archivo token.json existente.
 # Este scope es solo para LEER. Si necesitas enviar, usa: 'https://www.googleapis.com/auth/gmail.send'
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+path_to_credentials = os.path.join(BASE_DIR, 'credentials.json')
 
 def main():
     creds = None
@@ -29,7 +31,7 @@ def main():
         if not creds:
             # Flujo completo: abre el navegador para que el usuario autorice
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+                path_to_credentials, SCOPES)
             creds = flow.run_local_server(port=0)
             
         # 3. Guardar las credenciales para la próxima ejecución

@@ -68,6 +68,17 @@ class EstudianteForm(BaseStyledModelForm):
 
 
 class ProfesorForm(BaseStyledModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        #self.fields["sala"].required = False
+        #self.fields["sala"].empty_label = "Sin sala asignada"
+
+        for field_name, field in self.fields.items():
+            css_classes = 'bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white'
+            
+            # Agregamos las clases al widget existente
+            field.widget.attrs.update({'class': css_classes})
+    
     password1 = forms.CharField(
         widget=forms.PasswordInput(),
         label="Contraseña",
@@ -85,6 +96,8 @@ class ProfesorForm(BaseStyledModelForm):
             "last_name",
             "email",
             "profesion",
+            "nro_registro"
+            #"sala"
         ]
         labels = {
             "username": "Usuario",
@@ -92,6 +105,8 @@ class ProfesorForm(BaseStyledModelForm):
             "last_name": "Apellidos",
             "email": "Correo electrónico",
             "profesion": "Profesión",
+            "nro_registro": "Número de registro"
+            #"sala": "Sala"
         }
 
     def clean(self):
@@ -109,16 +124,6 @@ class ProfesorForm(BaseStyledModelForm):
         if commit:
             user.save()
         return user
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        for field_name, field in self.fields.items():
-            css_classes = 'bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white'
-            
-            # Agregamos las clases al widget existente
-            field.widget.attrs.update({'class': css_classes})
-
 
 class CursoForm(BaseStyledModelForm):
     def __init__(self, *args, **kwargs):

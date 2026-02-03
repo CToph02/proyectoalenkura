@@ -22,6 +22,6 @@ class PaciAppModel(DateTime):
 class Indicador_paci(models.Model):
     indicador = models.CharField(max_length=150, null=True)
     paci = models.ForeignKey(PaciAppModel, on_delete=models.CASCADE, related_name='indicadores_paci', null=True)
-    
+
     def __str__(self) -> str:
         return self.indicador or ""

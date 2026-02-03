@@ -1,77 +1,79 @@
 from django.contrib import messages
-from django.contrib.auth import get_user_model
-from django.shortcuts import redirect, render, get_object_or_404
-from django.db.models import Exists, OuterRef, Avg
 from django.contrib.admin.views.decorators import staff_member_required
-
-from .models import Curso, Estudiante
+from django.contrib.auth import get_user_model
+from django.db.models import Avg, Exists, OuterRef
+from django.shortcuts import get_object_or_404, redirect, render
+from instrumentosApp.models import Instrumento_evaluacion, Nota
 from paciApp.models import PaciAppModel
-from instrumentosApp.models import Indicadores_instrumento, Nota
 from ped.models import PlanAsignatura
-from .forms import CursoForm, EstudianteForm, ProfesorForm
 from utils import enviar_correo_gmail
+
+from .forms import CursoForm, EstudianteForm, ProfesorForm
+from .models import Curso, Estudiante
 
 # Create your views here.
 
+
 def index(request):
-    return render(request, 'index.html')
+    return render(request, "index.html")
 
 
 def estudiantes_view(request):
     estudiantes = Estudiante.objects.all().annotate(
-        tiene_paci=Exists(
-            PaciAppModel.objects.filter(student=OuterRef('pk'))
-        ),
+        tiene_paci=Exists(PaciAppModel.objects.filter(student=OuterRef("pk"))),
         tiene_nota=Exists(
-            Nota.objects.filter(estudiante=OuterRef('pk'))
+            Nota.objects.filter(
+                instrumento__estudiante=OuterRef("pk")
+            )
         ),
         # tiene_indicadores=Exists(
         #     Indicadores.objects.filter(paci__student=OuterRef('pk'))
         # )
     )
-    #estudiante_id = request.GET.get('estudiante_id')
+    # estudiante_id = request.GET.get('estudiante_id')
 
-    #paci = PaciAppModel.objects.filter(student__in=estudiantes)
-    #indicadores = Indicadores.objects.filter(paci__in=paci)
+    # paci = PaciAppModel.objects.filter(student__in=estudiantes)
+    # indicadores = Indicadores.objects.filter(paci__in=paci)
     context = {
-        'estudiantes': estudiantes,
+        "estudiantes": estudiantes,
         #'paci': paci,
         #'indicadores': indicadores
     }
-    return render(request, 'estudiantes.html', context)
+    return render(request, "estudiantes.html", context)
+
 
 @staff_member_required
 def gestion_view(request):
-    active_tab = request.GET.get('tab', 'estudiantes')
+    active_tab = request.GET.get("tab", "estudiantes")
     User = get_user_model()
 
-    if request.method == 'POST':
-        active_tab = request.POST.get('active_tab', 'estudiantes')
+    if request.method == "POST":
+        active_tab = request.POST.get("active_tab", "estudiantes")
 
-        if active_tab == 'estudiantes':
+        if active_tab == "estudiantes":
             estudiante_form = EstudianteForm(request.POST)
             profesor_form = ProfesorForm()
             curso_form = CursoForm()
             if estudiante_form.is_valid():
                 estudiante_form.save()
-                messages.success(request, 'Estudiante creado correctamente.')
-                return redirect(f'{request.path}?tab=estudiantes')
-        elif active_tab == 'profesores':
+                messages.success(request, "Estudiante creado correctamente.")
+                return redirect(f"{request.path}?tab=estudiantes")
+        elif active_tab == "profesores":
             profesor_form = ProfesorForm(request.POST)
             estudiante_form = EstudianteForm()
             curso_form = CursoForm()
             if profesor_form.is_valid():
                 profesor_form.save()
-                messages.success(request, 'Profesor creado correctamente.')
-                return redirect(f'{request.path}?tab=profesores')
-        elif active_tab == 'cursos':
+                messages.success(request, "Profesor creado correctamente.")
+                return redirect(f"{request.path}?tab=profesores")
+        elif active_tab == "cursos":
             curso_form = CursoForm(request.POST)
             estudiante_form = EstudianteForm()
             profesor_form = ProfesorForm()
             if curso_form.is_valid():
                 curso_form.save()
-                messages.success(request, 'Curso creado correctamente.')
-                return redirect(f'{request.path}?tab=cursos')
+                messages.success(request, "Curso creado correctamente.")
+                return redirect(f"{request.path}?tab=cursos")
         else:
             estudiante_form = EstudianteForm()
             profesor_form = ProfesorForm()
@@ -81,45 +83,56 @@ def gestion_view(request):
         profesor_form = ProfesorForm()
         curso_form = CursoForm()
 
-    estudiantes = Estudiante.objects.select_related('curso', 'curso__sala_id').all()
+    estudiantes = Estudiante.objects.select_related("curso", "curso__sala_id").all()
     profesores = User.objects.filter(role=User.Roles.TEACHER)
-    cursos = Curso.objects.select_related('sala_id').all()
+    cursos = Curso.objects.select_related("sala_id").all()
 
     context = {
-        'active_tab': active_tab,
-        'estudiante_form': estudiante_form,
-        'profesor_form': profesor_form,
-        'curso_form': curso_form,
-        'estudiantes': estudiantes,
-        'profesores': profesores,
-        'cursos': cursos,
+        "active_tab": active_tab,
+        "estudiante_form": estudiante_form,
+        "profesor_form": profesor_form,
+        "curso_form": curso_form,
+        "estudiantes": estudiantes,
+        "profesores": profesores,
+        "cursos": cursos,
     }
-    return render(request, 'gestion.html', context)
+    return render(request, "gestion.html", context)
+
 
 def send_email(request, id):
-    from django.core.mail import send_mail
     estudiante = get_object_or_404(Estudiante, pk=id)
+
+    instrumento = Instrumento_evaluacion.objects.filter(
+        estudiante_id=estudiante
+    ).prefetch_related(
+        'notas',
+        'indicadores',
+        'indicadores__asignatura',
+        'adecuaciones'
+    )
+
     nombre_estudiante = estudiante.first_name + " " + estudiante.last_name
-    notas = Nota.objects.filter(estudiante=estudiante.id)
-    #PaciAppModel.objects.filter(student=estudiante)
+    #notas = Nota.objects.filter(estudiante=estudiante.id)
+    notas = []
+    # PaciAppModel.objects.filter(student=estudiante)
     txt_notas = f"""
 
 Notas del estudiante: {nombre_estudiante}\n
 """
-    for nota in notas:
-        txt_notas += f"- {nota.asignatura}: {nota}\n"
     
-    promedio_final = notas.aggregate(promedio=Avg('nota'))
-    
+    for item in instrumento:
+        for nota in item.notas.all():
+            txt_notas += f"- {nota.asignatura}: {nota}\n"
+
+            promedio_final = item.notas.all().aggregate(promedio=Avg("nota"))
+
     txt_notas += f"\nPromedio: {round(promedio_final['promedio'], 1)}"
 
-    para = request.POST.get('para')
-    cuerpo_mensaje = request.POST.get('cuerpo_mensaje', '')
-    asunto = request.POST.get('asunto')
+    para = request.POST.get("para")
+    cuerpo_mensaje = request.POST.get("cuerpo_mensaje", "")
+    asunto = request.POST.get("asunto")
     mensaje = cuerpo_mensaje + txt_notas
     enviar_correo_gmail(para, asunto, mensaje)
 
-    context = {
-        'estudiante':estudiante
-    }
-    return render(request, 'correo.html', context)
+    context = {"estudiante": estudiante}
+    return render(request, "correo.html", context)

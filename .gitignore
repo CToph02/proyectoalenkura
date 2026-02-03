@@ -5,7 +5,7 @@
 *.log
 *.pot
 *.pyc
-__pycache__/
+__pycache__/ff
 local_settings.py
 media
 
@@ -304,8 +304,6 @@ __pycache__/
 .python-version
 
 alenkura/token.json
-alenkura/1token.json
 alenkura/credentials.json
 token.json
-1token.json
 credentials.json

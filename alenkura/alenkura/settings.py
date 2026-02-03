@@ -83,7 +83,14 @@ WSGI_APPLICATION = 'alenkura.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+TURSO_TOKEN = os.getenv("TURSO_TOKEN")
+TURSO_DB_URL = os.getenv("TURSO_DB_URL")
+
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': "libsql.db.backends.sqlite3",
+    #     'NAME': "libsql://${TURSO_DB_URL}.turso.io?authToken=${TURSO_TOKEN}",
+    # }
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',

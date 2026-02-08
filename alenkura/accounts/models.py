@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from core.models import Sala
 
 class User(AbstractUser):
     class Roles(models.TextChoices):
@@ -15,6 +16,8 @@ class User(AbstractUser):
     address = models.CharField(max_length=255, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     nro_registro = models.CharField(max_length=20, null=True)
+    #sala = models.ForeignKey(Sala, on_delete=models.SET_NULL, null=True, blank=True)
+
 
     def __str__(self) -> str:
         full_name = self.get_full_name().strip()

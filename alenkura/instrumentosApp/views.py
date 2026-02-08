@@ -16,7 +16,7 @@ try:  # pragma: no cover - import guard for optional dependency
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import letter
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle, Image
 except ImportError:  # pragma: no cover - only triggered when lib missing
     colors = None
     letter = None
@@ -27,6 +27,7 @@ except ImportError:  # pragma: no cover - only triggered when lib missing
     Spacer = None
     Table = None
     TableStyle = None
+    Image = None
 
 from io import BytesIO
 from xml.sax.saxutils import escape
@@ -107,7 +108,7 @@ def evaluar(request, id):
     print(f"MAPA ASIGNATURA {mapa_asignaturas}")
 
     adecuaciones_list = []
-    puntajes = {}
+    puntajes = []
 
     for key, value in request.POST.items():
         if key.startswith("csrfmiddlewaretoken"):
@@ -118,11 +119,8 @@ def evaluar(request, id):
         if key.startswith("puntaje_"):
             name_puntaje = key.split("_")
             asignatura = name_puntaje[1]
-            indicador = name_puntaje[2]
-            if indicador not in puntajes:
-                puntajes[asignatura] = {}
-            puntajes[asignatura]["indicador"] = indicador
-            puntajes[asignatura]["puntaje"] = value
+            indicador = "_".join(name_puntaje[2:])
+            puntajes.append({"asignatura": asignatura, "indicador": indicador, "puntaje": value})
             print(
                 f"INDICADOR: {indicador} - ASIGNATURA: {asignatura} - PUNTAJE: {value}"
             )
@@ -200,14 +198,15 @@ def evaluar(request, id):
             # ---------------------------------------------------------
             # PASO 4: Guardar Indicadores (Se mantiene igual)
             # ---------------------------------------------------------
-            for asig_nombre, info in puntajes.items():
-                asig_model = mapa_asignaturas.get(asig_nombre)
+            instrumento_evaluacion.indicadores.all().delete()
+            for item in puntajes:
+                asig_model = mapa_asignaturas.get(item["asignatura"])
                 if asig_model:
-                    Indicadores_instrumento.objects.update_or_create(
+                    Indicadores_instrumento.objects.create(
                         instrumento=instrumento_evaluacion,
-                        indicador=info.get("indicador"),
+                        indicador=item["indicador"],
                         asignatura=asig_model,
-                        defaults={"puntaje_obtenido": info.get("puntaje")},
+                        puntaje_obtenido=item["puntaje"],
                     )
 
     except Exception as e:
@@ -252,23 +251,224 @@ def ver_notas(request, id):
 
 def instrumento_pdf(request, id):
     estudiante = get_student(request, id)
-    instrumento = Instrumento_evaluacion.objects.filter(
-        estudiante_id=estudiante
+    # Obtenemos el instrumento asociado al estudiante
+    instrumento_qs = Instrumento_evaluacion.objects.filter(
+        estudiante=estudiante
     ).prefetch_related(
         'notas',
+        'notas__asignatura',
         'indicadores',
         'indicadores__asignatura',
         'adecuaciones'
     )
+    instrumento = instrumento_qs.first()
 
-    paci = PaciAppModel.objects.filter(student_id=estudiante)
+    if not instrumento:
+        return HttpResponse("No se encontró un instrumento de evaluación para este estudiante.", status=404)
 
-    for p in paci.all():
-        print(f"Objetivo general: {p.objetivo_general} - Adecuación curricular: {p.adecuacion_curricular}")
+    if SimpleDocTemplate is None or letter is None:
+        return HttpResponse(
+            "La librería reportlab no está instalada. Instálala con 'pip install reportlab' para generar el PDF.",
+            status=500,
+        )
 
-    for items in instrumento:
-        for i in items.indicadores.all():
-            print(f"Indicador: {i} - Puntaje: {i.puntaje_obtenido}")
-        for n in items.notas.all():
-            print(f"Nota: {n} - Asignatura: {n.asignatura}")
-    return HttpResponse(instrumento)
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=letter,
+        leftMargin=36,
+        rightMargin=36,
+        topMargin=40,
+        bottomMargin=36,
+        title=f"Evaluacion_{estudiante.first_name}",
+    )
+
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle(
+        "EvalTitle",
+        parent=styles["Heading2"],
+        alignment=1,
+        fontName="Helvetica-Bold",
+        fontSize=14,
+        leading=16,
+        spaceAfter=10,
+        textColor="#000000",
+    )
+    body_style = ParagraphStyle(
+        "EvalBody",
+        parent=styles["Normal"],
+        fontSize=10,
+        leading=12,
+        spaceAfter=0,
+    )
+
+    def build_paragraph(text, style=body_style, default="-"):
+        """Devuelve un Paragraph escapando HTML y conservando saltos de línea."""
+        value = (text or "").strip()
+        if not value:
+            value = default
+        sanitized = escape(str(value))
+        lines = sanitized.splitlines() or ["-"]
+        html = "<br/>".join(line if line else "&nbsp;" for line in lines)
+        return Paragraph(html, style)
+
+    story = []
+    
+    logo_url = "https://images.builderservices.io/s/cdn/v1.0/i/m?url=https%3A%2F%2Fstorage.googleapis.com%2Fproduction-hostgator-chile-v1-0-3%2F573%2F1237573%2FEeoJHNah%2Fd473ee41415e43fc99acf1131253fde3&methods=resize%2C60%2C5000"
+    try:
+        logo = Image(logo_url, width=60, height=60)
+        logo.hAlign = 'LEFT'
+        story.append(logo)
+        story.append(Spacer(1, 12))
+    except Exception as e:
+        print(f"Error al cargar logo: {e}")
+
+    story.append(Paragraph("INFORME DE EVALUACIÓN", title_style))
+    
+    # Datos de identificación
+    nombre_estudiante = f"{estudiante.first_name} {estudiante.last_name}"
+    curso_nombre = estudiante.curso.name if estudiante.curso else "Sin curso"
+    
+    from datetime import datetime
+    fecha_emision = datetime.now().strftime("%d/%m/%Y")
+
+    story.append(build_paragraph("I. Identificación del estudiante:"))
+    story.append(Spacer(1, 6))
+
+    estilos_tabla = TableStyle([
+        ("GRID", (0, 0), (-1, -1), 0.6, colors.HexColor("#c6c6c6")),
+        ("BACKGROUND", (0, 0), (-1, -1), colors.whitesmoke),
+        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("FONTSIZE", (0, 0), (-1, -1), 10),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+    ])
+
+    t1 = Table([["Nombre:", nombre_estudiante]], colWidths=[120, 310])
+    t1.setStyle(estilos_tabla)
+    
+    t2 = Table([["Curso:", curso_nombre, "Fecha emisión:", fecha_emision]], colWidths=[120, 115, 90, 105])
+    t2.setStyle(estilos_tabla)
+
+    story.append(t1)
+    story.append(t2)
+    story.append(Spacer(1, 12))
+
+    # II. Resultados (Notas)
+    story.append(build_paragraph("II. Resultados de Evaluación (Notas):"))
+    story.append(Spacer(1, 6))
+
+    notas_data = [[Paragraph("Asignatura", body_style), Paragraph("Nota", body_style)]]
+    for nota in instrumento.notas.all():
+        asig = nota.asignatura.nombre if nota.asignatura else "General"
+        notas_data.append([build_paragraph(asig), build_paragraph(str(nota.nota))])
+
+    if len(notas_data) > 1:
+        t_notas = Table(notas_data, colWidths=[300, 100])
+        t_notas.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f2d4c4")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#000000")),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("GRID", (0, 0), (-1, -1), 0.6, colors.HexColor("#c6c6c6")),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#fbfbfb")]),
+        ]))
+        story.append(t_notas)
+    else:
+        story.append(build_paragraph("No se registraron notas."))
+    
+    story.append(Spacer(1, 12))
+
+    # III. Adecuaciones
+    story.append(build_paragraph("III. Adecuaciones Curriculares:"))
+    story.append(Spacer(1, 6))
+    
+    adecuaciones = instrumento.adecuaciones.all()
+    if adecuaciones:
+        for adec in adecuaciones:
+            story.append(build_paragraph(f"• {adec.adecuacion}"))
+    else:
+        story.append(build_paragraph("No se registraron adecuaciones."))
+    
+    story.append(Spacer(1, 12))
+
+    # IV. Indicadores
+    story.append(build_paragraph("IV. Detalle de Indicadores:"))
+    story.append(Spacer(1, 6))
+
+    # Agrupamos indicadores por asignatura
+    indicadores_list = sorted(instrumento.indicadores.all(), key=lambda x: x.asignatura.nombre if x.asignatura else "")
+    grouped_indicadores = {}
+    for ind in indicadores_list:
+        asig = ind.asignatura.nombre if ind.asignatura else "General"
+        if asig not in grouped_indicadores:
+            grouped_indicadores[asig] = []
+        grouped_indicadores[asig].append(ind)
+
+    if not grouped_indicadores:
+        story.append(build_paragraph("No se registraron indicadores."))
+    else:
+        ind_data = [[Paragraph("Asignatura", body_style), Paragraph("Indicador", body_style), Paragraph("Puntaje", body_style)]]
+        spans = []
+        row_idx = 1
+        
+        for asig, inds in grouped_indicadores.items():
+            # Construimos tabla interna para los indicadores de esta asignatura
+            inner_data = []
+            for ind in inds:
+                inner_data.append([
+                    build_paragraph(ind.indicador),
+                    build_paragraph(str(ind.puntaje_obtenido))
+                ])
+            
+            t_inner = Table(inner_data, colWidths=[250, 60])
+            t_inner.setStyle(TableStyle([
+                ("GRID", (0, 0), (-1, -1), 0.6, colors.HexColor("#c6c6c6")),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                ("TOPPADDING", (0, 0), (-1, -1), 6),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ]))
+            
+            # Agregamos la fila principal: Asignatura | Tabla Interna | (Espacio para SPAN)
+            ind_data.append([
+                build_paragraph(asig),
+                t_inner,
+                ""
+            ])
+            # Hacemos que la tabla interna ocupe las columnas 1 y 2 (Indicador y Puntaje)
+            spans.append(('SPAN', (1, row_idx), (2, row_idx)))
+            row_idx += 1
+
+        t_ind = Table(ind_data, colWidths=[120, 250, 60], repeatRows=1)
+        estilos = [
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f2d4c4")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#000000")),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("ALIGN", (0, 0), (-1, 0), "CENTER"),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("GRID", (0, 0), (-1, -1), 0.6, colors.HexColor("#c6c6c6")),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#fbfbfb")]),
+            ("LEFTPADDING", (0, 0), (0, -1), 6), # Padding solo para col Asignatura
+            ("RIGHTPADDING", (0, 0), (0, -1), 6),
+            ("TOPPADDING", (0, 0), (0, -1), 6),
+            ("BOTTOMPADDING", (0, 0), (0, -1), 6),
+            ("LEFTPADDING", (1, 1), (-1, -1), 0), # Sin padding para la tabla anidada
+            ("RIGHTPADDING", (1, 1), (-1, -1), 0),
+            ("TOPPADDING", (1, 1), (-1, -1), 0),
+            ("BOTTOMPADDING", (1, 1), (-1, -1), 0),
+        ]
+        estilos.extend(spans)
+        t_ind.setStyle(TableStyle(estilos))
+        story.append(t_ind)
+
+    doc.build(story)
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Evaluacion_{estudiante.first_name}.pdf"'
+    return response

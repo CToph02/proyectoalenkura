@@ -21,7 +21,7 @@ try:  # pragma: no cover - import guard for optional dependency
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import letter
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle, Image
 except ImportError:  # pragma: no cover - only triggered when lib missing
     colors = None
     letter = None
@@ -32,7 +32,7 @@ except ImportError:  # pragma: no cover - only triggered when lib missing
     Spacer = None
     Table = None
     TableStyle = None
-
+    Image = None
 
 def formulario_view(request):
     """Renderiza y procesa el formulario PED para planificar evaluaciones."""
@@ -224,9 +224,17 @@ def plan_pdf_view(request, plan_id):
     curso_text = plan.curso.name if plan.curso else "No asignado"
     nivel_text = plan.curso.get_level_display() if plan.curso else "No asignado"
 
-    story = [
-        Paragraph("PLAN DE EVALUACIÓN DIAGNÓSTICA", title_style),
-    ]
+    story = []
+    logo_url = "https://images.builderservices.io/s/cdn/v1.0/i/m?url=https%3A%2F%2Fstorage.googleapis.com%2Fproduction-hostgator-chile-v1-0-3%2F573%2F1237573%2FEeoJHNah%2Fd473ee41415e43fc99acf1131253fde3&methods=resize%2C60%2C5000"
+    try:
+        logo = Image(logo_url, width=60, height=60)
+        logo.hAlign = 'LEFT'
+        story.append(logo)
+        story.append(Spacer(1, 12))
+    except Exception as e:
+        print(f"Error al cargar logo: {e}")
+    story.append(Paragraph("PLAN DE EVALUACIÓN DIAGNÓSTICA", title_style))
+        
 
     header_table = Table(
         [

@@ -25,6 +25,7 @@ try:  # pragma: no cover - optional dependency
         TableStyle,
         ListFlowable,
         ListItem,
+        Image,
     )
 except ImportError:  # pragma: no cover
     colors = None
@@ -36,7 +37,7 @@ except ImportError:  # pragma: no cover
     Spacer = None
     Table = None
     TableStyle = None
-
+    Image = None
 
 def proyecto_view(request):
     """Formulario para crear un Proyecto de Aula con selección de aula, ejes y objetivos."""
@@ -316,19 +317,16 @@ def proyecto_pdf(request, pk: int) -> HttpResponse:
     else:
         fecha_text = format_date(getattr(proyecto, "creado_en", None).date() if getattr(proyecto, "creado_en", None) else None)
 
-    title_block = Table(
-        [["PROYECTO DE AULA"]],
-        colWidths=[470],
-        style=TableStyle(
-            [
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                ("FONTNAME", (0, 0), (-1, -1), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, -1), 12),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-            ]
-        ),
-    )
-    story = [title_block, Spacer(1, 6)]
+    story = []
+    logo_url = "https://images.builderservices.io/s/cdn/v1.0/i/m?url=https%3A%2F%2Fstorage.googleapis.com%2Fproduction-hostgator-chile-v1-0-3%2F573%2F1237573%2FEeoJHNah%2Fd473ee41415e43fc99acf1131253fde3&methods=resize%2C60%2C5000"
+    try:
+        logo = Image(logo_url, width=60, height=60)
+        logo.hAlign = 'LEFT'
+        story.append(logo)
+        story.append(Spacer(1, 12))
+    except Exception as e:
+        print(f"Error al cargar logo: {e}")
+    story.append(Paragraph("PROYECTO DE AULA", title_style))
 
     subsectores_items = [
         ListItem(Paragraph(f"{sub.eje.asignatura.nombre if sub.eje.asignatura else '-'} — {sub.eje.nombre}", body_style), leftIndent=0)

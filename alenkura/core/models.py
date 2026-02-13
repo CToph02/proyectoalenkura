@@ -1,8 +1,5 @@
-import re
-
-from accounts.models import User
 from django.db import models
-
+import re
 
 class DateTime(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -59,9 +56,6 @@ class Nivel(models.TextChoices):
 
 class Sala(models.Model):
     nombre_sala = models.CharField(max_length=50, null=False)
-    teachers = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="profesor", blank=True, null=True
-    )
 
     def __str__(self):
         return f"{self.nombre_sala}"
@@ -71,7 +65,7 @@ class Curso(DateTime):
     level = models.CharField(max_length=10, choices=Nivel.choices, default=Nivel.BASIC)
     name = models.CharField(max_length=25)
     sala_id = models.ForeignKey(
-        Sala, on_delete=models.CASCADE, related_name="sala", null=True
+        Sala, on_delete=models.CASCADE, related_name="cursos", null=True
     )
 
     def __str__(self) -> str:
@@ -110,7 +104,7 @@ class Apoderado(DateTime):
 class Estudiante(DateTime):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
-    rut = models.SmallIntegerField(unique=True)
+    rut = models.CharField(max_length=10, unique=True, verbose_name="RUT")
     birth_date = models.DateField()
     bapDiag = models.CharField(max_length=40)
     address = models.CharField(max_length=40)

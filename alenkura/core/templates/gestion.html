@@ -155,18 +155,22 @@
               <thead class="bg-green-200 dark:bg-gray-800 dark:text-gray-200">
                 <tr class="text-left">
                   <th class="px-3 py-2">Usuario</th>
+                  <th class="px-3 py-2">Nro. de Registro</th>
                   <th class="px-3 py-2">Nombre</th>
                   <th class="px-3 py-2">Correo</th>
                   <th class="px-3 py-2">Profesión</th>
+                  <th class="px-3 py-2">Sala asignada</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-300 dark:divide-gray-800">
                 {% for profesor in profesores %}
                 <tr class="hover:bg-green-50 dark:hover:bg-gray-800/60">
                   <td class="px-3 py-2">{{ profesor.username }}</td>
-                  <td class="px-3 py-2">{{ profesor.get_full_name|default:'Sin nombre' }}</td>
-                  <td class="px-3 py-2">{{ profesor.email|default:'-' }}</td>
-                  <td class="px-3 py-2">{{ profesor.profesion|default:'-' }}</td>
+                  <td class="px-3 py-2">{{ profesor.nro_registro }}</td>
+                  <td class="px-3 py-2">{{ profesor.get_full_name | default:'Sin nombre' }}</td>
+                  <td class="px-3 py-2">{{ profesor.email | default:'Sin correo' }}</td>
+                  <td class="px-3 py-2">{{ profesor.profesion | default:'Sin profesión' }}</td>
+                  <td class="px-3 py-2">{{ profesor.sala | default:'Sin sala asignada' }}</td>
                 </tr>
                 {% empty %}
                 <tr>

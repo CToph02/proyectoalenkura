@@ -41,7 +41,7 @@ class EstudianteForm(BaseStyledModelForm):
         labels = {
             "first_name": "Nombres",
             "last_name": "Apellidos",
-            "rut": "RUT",
+            "rut": "RUT sin puntos ni guión",
             "bapDiag": "Diagnóstico BAP",
             "address": "Dirección",
             "commune": "Comuna",
@@ -51,20 +51,17 @@ class EstudianteForm(BaseStyledModelForm):
         }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
-        # Iteramos sobre todos los campos del formulario
-        for field_name, field in self.fields.items():
-            # Definimos las clases de Tailwind comunes para todos los inputs
-            # bg-white: fondo blanco
-            # text-gray-900: texto oscuro
-            # border-gray-300: borde gris suave
-            # rounded-lg: bordes redondeados
-            # w-full: ancho completo
-            # p-2.5: padding interno
-            css_classes = 'bg-white border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white'
-            
-            # Agregamos las clases al widget existente
+        css_classes = 'bg-white border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white'
+
+        for field in self.fields.values():
             field.widget.attrs.update({'class': css_classes})
+
+        if 'rut' in self.fields:
+            self.fields['rut'].widget.attrs.update({
+                'maxlength': 10,
+                'inputmode': 'numeric',
+                'pattern': '[0-9]*',
+            })
 
 
 class ProfesorForm(BaseStyledModelForm):
@@ -96,8 +93,8 @@ class ProfesorForm(BaseStyledModelForm):
             "last_name",
             "email",
             "profesion",
-            "nro_registro"
-            #"sala"
+            "nro_registro",
+            "sala"
         ]
         labels = {
             "username": "Usuario",
@@ -105,8 +102,8 @@ class ProfesorForm(BaseStyledModelForm):
             "last_name": "Apellidos",
             "email": "Correo electrónico",
             "profesion": "Profesión",
-            "nro_registro": "Número de registro"
-            #"sala": "Sala"
+            "nro_registro": "Número de registro",
+            "sala": "Sala"
         }
 
     def clean(self):

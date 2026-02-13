@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
-from django.db.models import Avg, Exists, OuterRef
+from django.db.models import Avg, Exists, OuterRef, Prefetch
 from django.shortcuts import get_object_or_404, redirect, render
 from instrumentosApp.models import Instrumento_evaluacion, Nota
 from paciApp.models import PaciAppModel
@@ -9,7 +9,8 @@ from ped.models import PlanAsignatura
 from utils import enviar_correo_gmail
 
 from .forms import CursoForm, EstudianteForm, ProfesorForm
-from .models import Curso, Estudiante
+from .models import Curso, Estudiante, Sala
+from accounts.models import User
 
 # Create your views here.
 
@@ -19,25 +20,40 @@ def index(request):
 
 
 def estudiantes_view(request):
-    estudiantes = Estudiante.objects.all().annotate(
-        tiene_paci=Exists(PaciAppModel.objects.filter(student=OuterRef("pk"))),
-        tiene_nota=Exists(
-            Nota.objects.filter(
-                instrumento__estudiante=OuterRef("pk")
-            )
-        ),
-        # tiene_indicadores=Exists(
-        #     Indicadores.objects.filter(paci__student=OuterRef('pk'))
-        # )
-    )
-    # estudiante_id = request.GET.get('estudiante_id')
+    user = request.user
+    sala = None
+    estudiantes = Estudiante.objects.none()
 
-    # paci = PaciAppModel.objects.filter(student__in=estudiantes)
-    # indicadores = Indicadores.objects.filter(paci__in=paci)
+    if getattr(user, "sala", None):
+        sala = Sala.objects.prefetch_related(
+            Prefetch(
+                "cursos",
+                queryset=Curso.objects.prefetch_related("students"),
+            )
+        ).filter(id=user.sala.id).first()
+
+    if sala:
+        estudiantes = Estudiante.objects.filter(curso__sala_id=sala).annotate(
+            tiene_paci=Exists(PaciAppModel.objects.filter(student=OuterRef("pk"))),
+            tiene_nota=Exists(
+                Nota.objects.filter(
+                    instrumento__estudiante=OuterRef("pk")
+                )
+            ),
+        )
+    else:
+        estudiantes = Estudiante.objects.all().annotate(
+            tiene_paci=Exists(PaciAppModel.objects.filter(student=OuterRef("pk"))),
+            tiene_nota=Exists(
+                Nota.objects.filter(
+                    instrumento__estudiante=OuterRef("pk")
+                )
+            ),
+        )
+
     context = {
         "estudiantes": estudiantes,
-        #'paci': paci,
-        #'indicadores': indicadores
+        "sala": sala,
     }
     return render(request, "estudiantes.html", context)
 
@@ -84,7 +100,7 @@ def gestion_view(request):
         curso_form = CursoForm()
 
     estudiantes = Estudiante.objects.select_related("curso", "curso__sala_id").all()
-    profesores = User.objects.filter(role=User.Roles.TEACHER)
+    profesores = User.objects.filter(role=User.Roles.TEACHER).select_related("sala")
     cursos = Curso.objects.select_related("sala_id").all()
 
     context = {

@@ -1,5 +1,5 @@
 {% extends 'base.html'%} {% block content %}
-<h1 class="text-2xl font-bold mb-4">Lista de Estudiantes</h1>
+<h1 class="text-2xl font-bold mb-4">Lista de Estudiantes de la sala: {{ sala.nombre_sala }}</h1>
 
 {% if estudiantes %}
 <div
@@ -12,13 +12,10 @@
             <tr class="*:font-medium dark:*:text-white">
                 <th class="text-center px-3 py-2 whitespace-nowrap">RUT</th>
                 <th class="text-center px-3 py-2 whitespace-nowrap">Nombres</th>
-                <th class="text-center px-3 py-2 whitespace-nowrap">
-                    Apellidos
-                </th>
+                <th class="text-center px-3 py-2 whitespace-nowrap">Apellidos</th>
                 <th class="text-center px-3 py-2 whitespace-nowrap">Edad</th>
-                <th class="text-center px-3 py-2 whitespace-nowrap">
-                    Acciones
-                </th>
+                <th class="text-center px-3 py-2 whitespace-nowrap">curso</th>
+                <th class="text-center px-3 py-2 whitespace-nowrap">Acciones</th>
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -35,6 +32,10 @@
                 </td>
                 <td class="text-center px-3 py-2 whitespace-nowrap">
                     {{ estudiante.edad }}
+                </td>
+                <td class="text-center px-3 py-2 whitespace-nowrap">
+                    
+                    {{ estudiante.curso.name }}
                 </td>
                 <td
                     class="flex gap-4 justify-center px-3 py-2 whitespace-nowrap"
@@ -94,4 +95,5 @@
 </div>
 {% else %}
 <p>No hay estudiantes registrados.</p>
-{% endif %} {% endblock %}
+{% endif %} 
+{% endblock %}

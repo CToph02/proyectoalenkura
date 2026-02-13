@@ -54,6 +54,7 @@ def index(request, id):
             )
         )
     )
+    
     asignaturas = (
         Asignatura.objects.filter(
             paci_subject__student_id=estudiante.id

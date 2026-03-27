@@ -6,6 +6,7 @@ app_name = "ped"
 
 urlpatterns = [
     path("formulario/", views.formulario_view, name="formulario"),
+    path("plan/<int:plan_id>/editar/", views.plan_edit_view, name="plan_edit"),    
     path("plan/<int:plan_id>/pdf/", views.plan_pdf_view, name="plan_pdf"),
     path("plan/<int:plan_id>/eliminar/", views.plan_delete_view, name="plan_eliminar"),
 ]

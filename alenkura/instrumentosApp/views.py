@@ -1,4 +1,4 @@
-from core.models import Asignatura, Estudiante
+
 from django.db import transaction
 from django.db.models import Avg, Prefetch
 from django.http import HttpResponse
@@ -11,12 +11,14 @@ from .models import (
     Instrumento_evaluacion,
     Nota,
 )
+from core.models import Asignatura, Estudiante
 
 try:  # pragma: no cover - import guard for optional dependency
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import letter
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle, Image
+    
 except ImportError:  # pragma: no cover - only triggered when lib missing
     colors = None
     letter = None
@@ -38,7 +40,8 @@ def get_student(request, id):
     return estudiante
 
 
-def index(request, id):
+def index(request, id, num=1):
+    print("XD")
     estudiante = get_student(request, id)
 
     indicadores_paci = Indicador_paci.objects.filter(paci__student=estudiante)
@@ -74,6 +77,7 @@ def index(request, id):
         "estudiante": estudiante,
         "asignatura": asignaturas,
         "asignaturas": json.dumps(asignaturas_data),
+        "num_evaluacion": num,
     }
     return render(request, "indicadores.html", context)
 
@@ -102,7 +106,7 @@ def calcular_nota(pjes: dict, pje_alumno: dict) -> dict:
     return notas_finales
 
 
-def evaluar(request, id):
+def evaluar(request, id, num=1):
     estudiante = get_student(request, id)
     asignatura_qs = Asignatura.objects.all()
     mapa_asignaturas = {a.nombre: a for a in asignatura_qs}
@@ -164,6 +168,7 @@ def evaluar(request, id):
             # Ya no pasamos 'nota=' porque el campo fue eliminado del modelo Instrumento.
             instrumento_evaluacion, created = Instrumento_evaluacion.objects.get_or_create(
                 estudiante=estudiante,
+                numero_evaluacion=num,
                 defaults={} # Puedes agregar otros campos default aquí si tienes (ej. fecha)
             )
 
@@ -215,11 +220,12 @@ def evaluar(request, id):
 
     return redirect("coreApp:estudiantes")
 
-def ver_notas(request, id):
+def ver_notas(request, id, num=1):
     estudiante = get_student(request, id)
 
     instrumentos = Instrumento_evaluacion.objects.filter(
-        estudiante=estudiante
+        estudiante=estudiante,
+        numero_evaluacion=num
     ).prefetch_related(
         'notas',
         'notas__asignatura',
@@ -227,34 +233,76 @@ def ver_notas(request, id):
         'indicadores__asignatura',
         'adecuaciones'
     )
-
-    notas_queryset = Nota.objects.filter(
-        instrumento__estudiante=estudiante
-    ).select_related('asignatura')
-
-    promedio_final = notas_queryset.aggregate(promedio=Avg("nota"))
-    valor_promedio = promedio_final["promedio"] if promedio_final["promedio"] else 0
+    print(instrumentos)
+    instrumento = instrumentos.first()
 
     asignaturas = Asignatura.objects.filter(
         paci_subject__student_id=estudiante.id
     ).distinct()
 
+    notas_dict = {}
+    for asig in asignaturas:
+        notas_dict[asig.id] = {
+            'asignatura': asig,
+            'n1': None,
+            'n2': None,
+            'n3': None,
+            'promedio': None,
+            'suma': 0,
+            'cantidad': 0
+        }
+        
+    for inst in instrumentos:
+        num = inst.numero_evaluacion
+        if num not in [1, 2, 3]:
+            continue
+        for nota in inst.notas.all():
+            asig_id = nota.asignatura_id
+            if asig_id not in notas_dict:
+                notas_dict[asig_id] = {
+                    'asignatura': nota.asignatura,
+                    'n1': None,
+                    'n2': None,
+                    'n3': None,
+                    'promedio': None,
+                    'suma': 0,
+                    'cantidad': 0
+                }
+            val = float(nota.nota) if nota.nota else None
+            notas_dict[asig_id][f'n{num}'] = val
+            if val is not None:
+                notas_dict[asig_id]['suma'] += val
+                notas_dict[asig_id]['cantidad'] += 1
+
+    promedio_general_suma = 0
+    promedio_general_cantidad = 0
+
+    for asig_id, data in notas_dict.items():
+        if data['cantidad'] > 0:
+            data['promedio'] = round(data['suma'] / data['cantidad'], 1)
+            promedio_general_suma += data['promedio']
+            promedio_general_cantidad += 1
+
+    promedio_final = round(promedio_general_suma / promedio_general_cantidad, 1) if promedio_general_cantidad > 0 else 0
+
+    a = notas_dict
+    print(a)
+
     context = {
         "estudiante": estudiante,
-        "instrumentos": instrumentos,
-        "notas": notas_queryset,
-        "promedio": round(valor_promedio, 1),
-        "asignaturas": asignaturas,
+        "instrumento": instrumento,
+        "notas_asignaturas": notas_dict,
+        "promedio_final": promedio_final,
     }
 
     return render(request, "notas.html", context)
 
-
-def instrumento_pdf(request, id):
+def instrumento_pdf(request, id, num):
     estudiante = get_student(request, id)
     # Obtenemos el instrumento asociado al estudiante
     instrumento_qs = Instrumento_evaluacion.objects.filter(
-        estudiante=estudiante
+        estudiante=estudiante,
+        numero_evaluacion=num
     ).prefetch_related(
         'notas',
         'notas__asignatura',
@@ -326,7 +374,7 @@ def instrumento_pdf(request, id):
     except Exception as e:
         print(f"Error al cargar logo: {e}")
 
-    story.append(Paragraph("INFORME DE EVALUACIÓN", title_style))
+    story.append(Paragraph(f"INFORME DE EVALUACIÓN {num}", title_style))
     
     # Datos de identificación
     nombre_estudiante = f"{estudiante.first_name} {estudiante.last_name}"

@@ -450,6 +450,10 @@
           <td class="px-3 py-2">{{ proyecto.docente|default:"-" }}</td>
           <td class="px-3 py-2">
             <div class="flex items-center justify-center gap-2">
+              <a href="{% url 'aula:proyecto_edit' proyecto.id %}"
+                class="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-50 dark:border-indigo-700 dark:bg-gray-900 dark:text-indigo-200 dark:hover:bg-indigo-800/40">
+                Editar
+              </a>
               <a href="{% url 'aula:proyecto_pdf' proyecto.id %}"
                 class="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-50 dark:border-indigo-700 dark:bg-gray-900 dark:text-indigo-200 dark:hover:bg-indigo-800/40">
                 Descargar

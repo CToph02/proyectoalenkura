@@ -8,7 +8,7 @@
         </h1>
 
         <a class="w-40 h-10 text-center rounded-xl bg-blue-600 p-2 text-white text-sm hover:bg-blue-700 transition-colors shadow-sm"
-            href="{% url 'instrumentosApp:instrumento_pdf' estudiante.id %}">
+            href="{% url 'instrumentosApp:instrumento_pdf' estudiante.id instrumento.numero_evaluacion %}">
             Descargar Instrumento
         </a>
     </div>
@@ -22,31 +22,65 @@
                         Asignatura
                     </th>
                     <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                        Evaluaciones
+                        Nota 1
+                    </th>
+                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                        Nota 2
+                    </th>
+                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                        Nota 3
+                    </th>
+                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                        Promedio
                     </th>
                 </tr>
             </thead>
 
             <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                {% for asig in asignaturas %}
+                {% for asig_id, data in notas_asignaturas.items %}
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
 
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200">
-                        {{ asig.nombre }}
+                        {{ data.asignatura }}
                     </td>
 
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                         <div class="flex flex-wrap gap-2">
-                            {% for nota in notas %}
-                                {# Usamos asignatura_id para evitar consultas extra a la BD #}
-                                {% if nota.asignatura_id == asig.id %}
-                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-white shadow-sm
-                                        {% if nota.nota >= 4.0 %} bg-blue-500 hover:bg-blue-600
-                                        {% else %} bg-red-500 hover:bg-red-600 {% endif %}">
-                                        {{ nota.nota }}
-                                    </span>
-                                {% endif %}
-                            {% endfor %}
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-white shadow-sm
+                                                            {% if data.n1 >= 4.0 %} bg-blue-500 hover:bg-blue-600
+                                                            {% else %} bg-red-500 hover:bg-red-600 {% endif %}">
+                                {{ data.n1 }}
+                            </span>
+                        </div>
+                    </td>
+
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <div class="flex flex-wrap gap-2">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-white shadow-sm
+                                                            {% if data.n2 >= 4.0 %} bg-blue-500 hover:bg-blue-600
+                                                            {% else %} bg-red-500 hover:bg-red-600 {% endif %}">
+                                {{ data.n2 }}
+                            </span>
+                        </div>
+                    </td>
+
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <div class="flex flex-wrap gap-2">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-white shadow-sm
+                                                            {% if data.n3 >= 4.0 %} bg-blue-500 hover:bg-blue-600
+                                                            {% else %} bg-red-500 hover:bg-red-600 {% endif %}">
+                                {{ data.n3 }}
+                            </span>
+                        </div>
+                    </td>
+
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <div class="flex flex-wrap gap-2">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-white shadow-sm
+                                                            {% if data.n1 >= 4.0 %} bg-blue-500 hover:bg-blue-600
+                                                            {% else %} bg-red-500 hover:bg-red-600 {% endif %}">
+                                {{ data.promedio }}
+                            </span>
                         </div>
                     </td>
 
@@ -63,9 +97,9 @@
     </div>
 
     <div class="shadow-xl overflow-hidden mt-6 p-6 bg-gray-900 border border-gray-700 rounded-3xl flex justify-between items-center">
-        <span class="text-gray-300 text-lg font-medium">Promedio General</span>
-        <span class="text-3xl font-bold {% if promedio >= 4.0 %}text-blue-400{% else %}text-red-400{% endif %}">
-            {{ promedio }}
+        <span class="text-gray-300 text-lg font-medium">Promedio General:</span>
+        <span class="text-3xl font-bold {% if promedio_final >= 4.0 %}text-blue-400{% else %}text-red-400{% endif %}">
+            {{ promedio_final }}
         </span>
     </div>
 </div>

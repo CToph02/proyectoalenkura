@@ -41,7 +41,7 @@ class EstudianteForm(BaseStyledModelForm):
         labels = {
             "first_name": "Nombres",
             "last_name": "Apellidos",
-            "rut": "RUT sin puntos ni guión",
+            "rut": "RUT",
             "bapDiag": "Diagnóstico BAP",
             "address": "Dirección",
             "commune": "Comuna",
@@ -49,6 +49,7 @@ class EstudianteForm(BaseStyledModelForm):
             "nivel": "Nivel",
             "curso": "Curso",
         }
+        
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         css_classes = 'bg-white border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white'
@@ -61,6 +62,7 @@ class EstudianteForm(BaseStyledModelForm):
                 'maxlength': 10,
                 'inputmode': 'numeric',
                 'pattern': '[0-9]*',
+                'placeholder': 'Sin puntos ni guión'
             })
 
 

@@ -10,10 +10,10 @@ class Instrumento_evaluacion(models.Model):
         null=True,
         blank=True,
     )
+    numero_evaluacion = models.IntegerField(default=1, null=True, blank=True)
 
     def __str__(self) -> str:
-        return f"{self.estudiante}"
-
+        return f"{self.estudiante} - Eval {self.numero_evaluacion}"
 
 class Nota(models.Model):
     instrumento = models.ForeignKey(
@@ -31,7 +31,6 @@ class Nota(models.Model):
     def __str__(self) -> str:
         return f"{self.nota}"
 
-
 class Adecuacion_curricular(models.Model):
     instrumento = models.ForeignKey(
         Instrumento_evaluacion,
@@ -44,7 +43,6 @@ class Adecuacion_curricular(models.Model):
 
     def __str__(self):
         return f"{self.adecuacion}"
-
 
 class Indicadores_instrumento(models.Model):
     instrumento = models.ForeignKey(

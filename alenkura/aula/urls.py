@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import proyecto_delete, proyecto_download, proyecto_pdf, proyecto_view
+from .views import proyecto_delete, proyecto_download, proyecto_pdf, proyecto_view, proyecto_edit
 
 app_name = "aula"
 
@@ -9,4 +9,5 @@ urlpatterns = [
     path("proyecto/<int:pk>/descargar/", proyecto_download, name="proyecto_download"),
     path("proyecto/<int:pk>/pdf/", proyecto_pdf, name="proyecto_pdf"),
     path("proyecto/<int:pk>/eliminar/", proyecto_delete, name="proyecto_delete"),
+    path("proyecto/<int:pk>/editar/", proyecto_edit, name="proyecto_edit"),
 ]

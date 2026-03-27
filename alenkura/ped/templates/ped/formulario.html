@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load ped_extras %}
 {% block content %}
-<h1 class="mb-4 text-2xl font-bold text-gray-900 dark:text-white">{{ page_title }}</h1>
+<h1>{% if is_editing %}Editar Plan de Evaluación #{{ plan_id }}{% else %}Crear Nuevo Plan de Evaluación{% endif %}</h1>
 
 {% if messages %}
 <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 dark:border-emerald-500/50 dark:bg-emerald-900/40 dark:text-emerald-100">
@@ -171,7 +171,8 @@
                     <th class="px-3 py-2 whitespace-nowrap">ID</th>
                     <th class="px-3 py-2 whitespace-nowrap">Decreto</th>
                     <th class="px-3 py-2 whitespace-nowrap">Curso</th>
-                    <th class="px-3 py-2 whitespace-nowrap">Creado</th>
+                    <th class="px-3 py-2 whitespace-nowrap">Fecha creación</th>
+                    <th class="px-3 py-2 whitespace-nowrap">Fecha actualización</th>
                     <th class="px-3 py-2 whitespace-nowrap">Asignaturas</th>
                     <th class="px-3 py-2 whitespace-nowrap">Acciones</th>
                 </tr>
@@ -189,6 +190,7 @@
                         {% endif %}
                     </td>
                     <td class="px-3 py-2 whitespace-nowrap">{{ plan.creado_en|date:"d/m/Y H:i" }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap">{{ plan.actualizado_en|date:"d/m/Y H:i" }}</td>
                     <td class="px-3 py-2 whitespace-nowrap">{{ plan.plan_asignaturas.count }}</td>
                     <td class="px-3 py-2 whitespace-nowrap">
                         <div class="flex flex-wrap gap-2">
@@ -196,6 +198,7 @@
                                 href="{% url 'ped:plan_pdf' plan.id %}" download>
                                 Descargar
                             </a>
+                            <a href="{% url 'ped:plan_edit' plan.id %}" class="inline-block rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700" title="Editar">Editar</a>
                             <form method="post" action="{% url 'ped:plan_eliminar' plan.id %}" class="inline">
                                 {% csrf_token %}
                                 <button type="submit"

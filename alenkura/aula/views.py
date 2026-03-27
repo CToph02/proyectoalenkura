@@ -1,6 +1,3 @@
-import json
-from io import BytesIO
-
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -9,7 +6,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from core.models import Asignatura, Eje, Sala
-
+import json
+from io import BytesIO
 from .models import ProyectoAula, ProyectoSubsector
 
 try:  # pragma: no cover - optional dependency
@@ -184,7 +182,6 @@ def proyecto_view(request):
     }
     return render(request, "aula/proyecto.html", context)
 
-
 def proyecto_download(request, pk: int) -> HttpResponse:
     proyecto = get_object_or_404(
         ProyectoAula.objects.select_related("sala").prefetch_related(
@@ -224,7 +221,6 @@ def proyecto_download(request, pk: int) -> HttpResponse:
     response = HttpResponse(content, content_type="text/plain; charset=utf-8")
     response["Content-Disposition"] = f'attachment; filename="proyecto_aula_{proyecto.pk}.txt"'
     return response
-
 
 def proyecto_pdf(request, pk: int) -> HttpResponse:
     proyecto = get_object_or_404(
@@ -504,6 +500,200 @@ def proyecto_pdf(request, pk: int) -> HttpResponse:
     response.write(pdf_value)
     return response
 
+def proyecto_edit(request, pk):
+    proyecto = get_object_or_404(
+        ProyectoAula.objects.select_related("sala").prefetch_related(
+            "subsectores__eje__asignatura",
+            "asignaturas",
+        ),
+        pk=pk,
+    )
+    
+    salas = Sala.objects.all().order_by("nombre_sala")
+    ejes = Eje.objects.select_related("asignatura").all().order_by("asignatura__nombre", "nombre")
+    User = get_user_model()
+    docentes = User.objects.filter(role=User.Roles.TEACHER).order_by("first_name", "last_name", "username")
+    
+    errors = []
+    selected_sala = proyecto.sala.id
+    selected_ejes_ids = set(proyecto.subsectores.values_list("eje_id", flat=True))
+    
+    # Intentar recuperar el ID del docente basado en el nombre guardado
+    selected_docente_id = None
+    if proyecto.docente:
+        for d in docentes:
+            nombre_completo = d.get_full_name()
+            if nombre_completo == proyecto.docente or d.username == proyecto.docente:
+                selected_docente_id = d.id
+                break
+    
+    docente_por_defecto = (
+        request.user.get_full_name()
+        if request.user.is_authenticated and request.user.get_full_name()
+        else (request.user.username if request.user.is_authenticated else "")
+    )
+    
+    # Valores por defecto para el formulario
+    form_values = {
+        "objetivo_general": proyecto.objetivo_general,
+        "conocimientos": proyecto.conocimientos,
+        "habilidades": proyecto.habilidades,
+        "actitudes": proyecto.actitudes,
+        "descripcion": proyecto.descripcion,
+        "procedimiento": proyecto.procedimiento,
+        "instrumento": proyecto.instrumento,
+        "gantt_data": proyecto.gantt_data or "[]",
+    }
+    
+    # Parsear objetivos curriculares
+    if proyecto.objetivos_curriculares:
+        lines = proyecto.objetivos_curriculares.split('\n')
+        for i in range(1, 5):
+            prefix = f"{i}. "
+            for line in lines:
+                if line.startswith(prefix):
+                    form_values[f"obj_curricular_{i}"] = line[len(prefix):]
+                    break
+
+    if request.method == "POST":
+        sala_val = request.POST.get("sala")
+        ejes_val = request.POST.getlist("ejes")
+        docente_id_val = request.POST.get("docente_id")
+        
+        # Validar Docente
+        docente_obj = None
+        if docente_id_val:
+            try:
+                selected_docente_id = int(docente_id_val)
+                docente_obj = docentes.get(pk=selected_docente_id)
+            except (ValueError, User.DoesNotExist):
+                errors.append("El docente seleccionado no existe.")
+        else:
+            errors.append("Debes seleccionar un docente.")
+
+        docente = (
+            docente_obj.get_full_name() or docente_obj.username if docente_obj else proyecto.docente
+        )
+
+        # Validar Sala
+        sala_obj = None
+        if sala_val:
+            try:
+                selected_sala = int(sala_val)
+                sala_obj = salas.get(pk=selected_sala)
+            except (TypeError, ValueError, Sala.DoesNotExist):
+                errors.append("El aula seleccionada no existe.")
+        else:
+            errors.append("Debes seleccionar un aula.")
+
+        # Validar Ejes
+        try:
+            selected_ejes_ids = {int(value) for value in ejes_val}
+        except ValueError:
+            selected_ejes_ids = set()
+            errors.append("Los ejes seleccionados no son válidos.")
+
+        if not selected_ejes_ids:
+            errors.append("Selecciona al menos un eje.")
+
+        ejes_qs = (
+            Eje.objects.select_related("asignatura")
+            .filter(id__in=selected_ejes_ids)
+            .order_by("asignatura__nombre", "nombre")
+        )
+        if ejes_qs.count() != len(selected_ejes_ids):
+            errors.append("Alguno de los ejes seleccionados no existe.")
+
+        # Recoger otros campos
+        objetivos_inputs = [
+            request.POST.get(f"obj_curricular_{i}", "").strip() for i in range(1, 5)
+        ]
+        objetivos_curriculares = "\n".join(
+            f"{idx}. {texto}" for idx, texto in enumerate(objetivos_inputs, start=1) if texto
+        )
+        objetivo_general = request.POST.get("objetivo_general", "").strip()
+        conocimientos = request.POST.get("conocimientos", "").strip()
+        habilidades = request.POST.get("habilidades", "").strip()
+        actitudes = request.POST.get("actitudes", "").strip()
+        descripcion = request.POST.get("descripcion", "").strip()
+        procedimiento = request.POST.get("procedimiento", "").strip() or "Observación"
+        instrumento = request.POST.get("instrumento", "").strip() or "Escala de apreciación"
+        gantt_data_raw = request.POST.get("gantt_data", "").strip()
+        try:
+            json.loads(gantt_data_raw or "[]")
+        except json.JSONDecodeError:
+            gantt_data_raw = "[]"
+
+        if not errors and sala_obj:
+            with transaction.atomic():
+                proyecto.sala = sala_obj
+                proyecto.docente = docente
+                proyecto.objetivos_curriculares = objetivos_curriculares
+                proyecto.objetivo_general = objetivo_general
+                proyecto.conocimientos = conocimientos
+                proyecto.habilidades = habilidades
+                proyecto.actitudes = actitudes
+                proyecto.descripcion = descripcion
+                proyecto.procedimiento = procedimiento
+                proyecto.instrumento = instrumento
+                proyecto.gantt_data = gantt_data_raw
+                proyecto.save()
+
+                # Actualizar Asignaturas
+                asignatura_ids = {eje.asignatura_id for eje in ejes_qs}
+                proyecto.asignaturas.set(
+                    Asignatura.objects.filter(id__in=asignatura_ids)
+                )
+
+                # Actualizar Subsectores (Ejes)
+                current_ejes = set(proyecto.subsectores.values_list('eje_id', flat=True))
+                new_ejes = selected_ejes_ids
+                
+                to_remove = current_ejes - new_ejes
+                to_add = new_ejes - current_ejes
+                
+                if to_remove:
+                    ProyectoSubsector.objects.filter(proyecto=proyecto, eje_id__in=to_remove).delete()
+                
+                for eje_id in to_add:
+                    eje_obj = next((e for e in ejes_qs if e.id == eje_id), None)
+                    if eje_obj:
+                        ProyectoSubsector.objects.create(
+                            proyecto=proyecto,
+                            eje=eje_obj,
+                            detalle_gantt="",
+                            acciones="",
+                            fechas="",
+                        )
+
+            messages.success(request, f"Proyecto de aula #{proyecto.pk} actualizado correctamente.")
+            return redirect("aula:proyecto_form")
+        
+        form_values = request.POST
+
+    proyectos = (
+        ProyectoAula.objects.select_related("sala")
+        .prefetch_related("asignaturas", "subsectores__eje__asignatura")
+        .order_by("-creado_en")
+    )
+
+    context = {
+        "page_title": f"Editar Proyecto #{proyecto.pk}",
+        "salas": salas,
+        "ejes": ejes,
+        "selected_sala": selected_sala,
+        "errors": errors,
+        "form_values": form_values,
+        "proyectos": proyectos,
+        "selected_ejes_ids": list(selected_ejes_ids),
+        "docentes": docentes,
+        "selected_docente_id": selected_docente_id,
+        "docente_por_defecto": docente_por_defecto,
+        "active_panel": "crear",
+        "is_editing": True,
+        "proyecto_id": proyecto.pk,
+    }
+    return render(request, "aula/proyecto.html", context)
 
 @require_POST
 def proyecto_delete(request, pk: int):

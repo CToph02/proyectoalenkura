@@ -150,9 +150,131 @@ def formulario_view(request):
         "form_values": form_values,
         "planes": planes,
         "form_expanded": request.method == "POST" or bool(selected_asignaturas) or bool(errors),
+        "is_editing": False,
     }
     return render(request, "ped/formulario.html", context)
 
+
+def plan_edit_view(request, plan_id):
+    """Renderiza y procesa el formulario para EDITAR un plan de evaluación existente."""
+    plan = get_object_or_404(
+        PlanEvaluacion.objects.select_related('decreto', 'curso').prefetch_related(
+            'plan_asignaturas__asignatura__ejes',
+            'plan_asignaturas__plan_ejes__eje',
+            'objetivos_generales',
+        ),
+        pk=plan_id
+    )
+    decretos = Decreto.objects.all()
+    asignaturas = Asignatura.objects.prefetch_related('ejes').all()
+    cursos = Curso.objects.all().order_by('name')
+    errors = []
+
+    if request.method == "POST":
+        decreto_value = request.POST.get("decreto")
+        asignaturas_values = request.POST.getlist("asignaturas")
+        curso_value = request.POST.get("curso")
+
+        # Validaciones
+        if decreto_value:
+            try:
+                selected_decreto = int(decreto_value)
+            except (TypeError, ValueError):
+                errors.append("El valor del decreto es inválido.")
+        else:
+            errors.append("Debes seleccionar un decreto.")
+
+        if curso_value:
+            try:
+                selected_curso = int(curso_value)
+            except (TypeError, ValueError):
+                errors.append("El valor del curso es inválido.")
+        else:
+            errors.append("Debes seleccionar un curso.")
+
+        try:
+            selected_asignaturas = [int(value) for value in asignaturas_values]
+            selected_asignaturas = list(dict.fromkeys(selected_asignaturas))
+        except ValueError:
+            selected_asignaturas = []
+            errors.append("Los valores de asignaturas son inválidos.")
+
+        if not selected_asignaturas:
+            errors.append("Selecciona al menos una asignatura.")
+
+        decreto_obj = None
+        curso_obj = None
+        asignaturas_qs = Asignatura.objects.filter(id__in=selected_asignaturas).prefetch_related('ejes')
+        if decreto_value and decreto_value.isdigit():
+            try:
+                decreto_obj = decretos.get(pk=int(decreto_value))
+            except Decreto.DoesNotExist:
+                errors.append("El decreto seleccionado no existe.")
+        if curso_value and curso_value.isdigit():
+            try:
+                curso_obj = cursos.get(pk=int(curso_value))
+            except Curso.DoesNotExist:
+                errors.append("El curso seleccionado no existe.")
+
+        if asignaturas_qs.count() != len(selected_asignaturas):
+            errors.append("Alguna asignatura seleccionada no existe.")
+
+        if not errors and decreto_obj and curso_obj:
+            with transaction.atomic():
+                plan.decreto = decreto_obj
+                plan.curso = curso_obj
+                plan.objetivo_general = ""
+                plan.save()
+
+                plan.plan_asignaturas.all().delete()
+                plan.objetivos_generales.all().delete()
+
+                for asignatura in asignaturas_qs:
+                    selected_ejes = set(request.POST.getlist(f"ejes_{asignatura.id}"))
+                    procedimiento = request.POST.get(f"procedimiento_{asignatura.id}", "").strip()
+                    instrumento = request.POST.get(f"instrumento_{asignatura.id}", "").strip()
+                    objetivo_asignatura = request.POST.get(f"objetivo_{asignatura.id}", "").strip()
+                    plan_asignatura = PlanAsignatura.objects.create(
+                        plan=plan, asignatura=asignatura, procedimiento=procedimiento, instrumento=instrumento
+                    )
+                    if objetivo_asignatura:
+                        ObjetivoGeneral.objects.create(
+                            descripcion=objetivo_asignatura, plan=plan, objAsignatura=asignatura
+                        )
+                    for eje in asignatura.ejes.all():
+                        contenido = request.POST.get(f"eje_{eje.id}", "").strip()
+                        if str(eje.id) in selected_ejes and contenido:
+                            PlanEje.objects.create(plan_asignatura=plan_asignatura, eje=eje, contenido=contenido)
+
+            messages.success(request, f"Se actualizó el plan PED #{plan.id} correctamente.")
+            return redirect("ped:formulario")
+
+        form_values = request.POST
+
+    else:  # GET
+        selected_decreto = plan.decreto_id
+        selected_curso = plan.curso_id
+        plan_asignaturas_qs = plan.plan_asignaturas.all()
+        selected_asignaturas = [pa.asignatura_id for pa in plan_asignaturas_qs]
+        form_values = {'decreto': plan.decreto_id, 'curso': plan.curso_id, 'asignaturas': selected_asignaturas}
+        for pa in plan_asignaturas_qs:
+            form_values[f'procedimiento_{pa.asignatura_id}'] = pa.procedimiento
+            form_values[f'instrumento_{pa.asignatura_id}'] = pa.instrumento
+            selected_ejes_for_asig = [pe.eje_id for pe in pa.plan_ejes.all()]
+            form_values[f'ejes_{pa.asignatura_id}'] = selected_ejes_for_asig
+            for pe in pa.plan_ejes.all():
+                form_values[f'eje_{pe.eje_id}'] = pe.contenido
+        for obj in plan.objetivos_generales.all():
+            if obj.objAsignatura_id:
+                form_values[f'objetivo_{obj.objAsignatura_id}'] = obj.descripcion
+
+    context = {
+        "page_title": f"Editar Formulario PED #{plan.id}", "decretos": decretos, "asignaturas": asignaturas,
+        "cursos": cursos, "selected_asignaturas": selected_asignaturas, "selected_decreto": selected_decreto,
+        "selected_curso": selected_curso, "errors": errors, "form_values": form_values, "is_editing": True,
+        "plan_id": plan_id, "form_expanded": True,
+    }
+    return render(request, "ped/formulario.html", context)
 
 def plan_pdf_view(request, plan_id):
     """Genera un PDF con el detalle del plan de evaluación seleccionado."""

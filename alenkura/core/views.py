@@ -1,62 +1,50 @@
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
-from django.db.models import Avg, Exists, OuterRef, Prefetch
+from django.db.models import Avg, Exists, OuterRef, Prefetch, Count, Q, Case, When, Value, BooleanField
 from django.shortcuts import get_object_or_404, redirect, render
+from django.db.models.functions import Lower, Upper
 from instrumentosApp.models import Instrumento_evaluacion, Nota
 from paciApp.models import PaciAppModel
 from ped.models import PlanAsignatura
 from utils import enviar_correo_gmail
-
 from .forms import CursoForm, EstudianteForm, ProfesorForm
 from .models import Curso, Estudiante, Sala
 from accounts.models import User
 
-# Create your views here.
-
-
 def index(request):
     return render(request, "index.html")
 
-
 def estudiantes_view(request):
     user = request.user
-    sala = None
     estudiantes = Estudiante.objects.none()
-
-    if getattr(user, "sala", None):
-        sala = Sala.objects.prefetch_related(
-            Prefetch(
-                "cursos",
-                queryset=Curso.objects.prefetch_related("students"),
+    
+    if hasattr(user, 'sala') and user.sala:
+        estudiantes = Estudiante.objects.filter(
+            curso__sala_id=user.sala.id
+        ).annotate(
+            tiene_paci=Exists(PaciAppModel.objects.filter(student=OuterRef("pk"))),
+            cantidad_evaluaciones=Count(
+                'instrumento',
+                filter=Q(instrumento__notas__isnull=False),
+                distinct=True
+            ),
+            tiene_nota=Case(
+                When(cantidad_evaluaciones=3, then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField()
             )
-        ).filter(id=user.sala.id).first()
-
-    if sala:
-        estudiantes = Estudiante.objects.filter(curso__sala_id=sala).annotate(
-            tiene_paci=Exists(PaciAppModel.objects.filter(student=OuterRef("pk"))),
-            tiene_nota=Exists(
-                Nota.objects.filter(
-                    instrumento__estudiante=OuterRef("pk")
-                )
-            ),
-        )
+        ).order_by(Lower('last_name'))
+        
     else:
-        estudiantes = Estudiante.objects.all().annotate(
-            tiene_paci=Exists(PaciAppModel.objects.filter(student=OuterRef("pk"))),
-            tiene_nota=Exists(
-                Nota.objects.filter(
-                    instrumento__estudiante=OuterRef("pk")
-                )
-            ),
-        )
+        estudiantes = Estudiante.objects.none()
 
     context = {
         "estudiantes": estudiantes,
-        "sala": sala,
+        'sala': user.sala if hasattr(user, 'sala') else None,
     }
-    return render(request, "estudiantes.html", context)
 
+    return render(request, "estudiantes.html", context)
 
 @staff_member_required
 def gestion_view(request):
@@ -113,7 +101,6 @@ def gestion_view(request):
         "cursos": cursos,
     }
     return render(request, "gestion.html", context)
-
 
 def send_email(request, id):
     estudiante = get_object_or_404(Estudiante, pk=id)

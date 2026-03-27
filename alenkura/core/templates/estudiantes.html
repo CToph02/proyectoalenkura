@@ -49,19 +49,19 @@
                                 href="{% url 'instrumentosApp:evaluar' estudiante.id %}">
                                     Ver Instrumento
                                 </a>
-                            {% elif estudiante.cantidad_evaluaciones == 3 %}
+                            {% elif estudiante.cantidad_evaluaciones >= 1 %}
                                 <a class="w-40 text-center rounded-xl bg-blue-600 p-2 text-white text-sm hover:bg-blue-700 transition-colors shadow-sm"
                                 href="{% url 'coreApp:send_mail' estudiante.id %}">
                                     Enviar correo
                                 </a>
-                            {% else %}
-                                <a class="w-40 text-center rounded-xl bg-emerald-600 p-2 text-white text-sm hover:bg-emerald-700 transition-colors shadow-sm"
-                                href="{% url 'instrumentosApp:instrumentos_list' estudiante.id estudiante.cantidad_evaluaciones %}">
-                                    Evaluar estudiante
-                                </a>
                                 <a class="w-40 text-center rounded-xl bg-emerald-600 p-2 text-white text-sm hover:bg-emerald-700 transition-colors shadow-sm"
                                 href="{% url 'instrumentosApp:notas' estudiante.id %}">
                                     Ver notas
+                                </a>
+                            {% else %}
+                                <a class="w-40 text-center rounded-xl bg-emerald-600 p-2 text-white text-sm hover:bg-emerald-700 transition-colors shadow-sm"
+                                href="{% url 'instrumentosApp:instrumentos_list' estudiante.id num_evaluacion %}">
+                                    Evaluar estudiante
                                 </a>
                             {% endif %}
                             

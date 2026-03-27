@@ -40,47 +40,6 @@ def get_student(request, id):
     return estudiante
 
 
-def index(request, id, num=1):
-    print("XD")
-    estudiante = get_student(request, id)
-
-    indicadores_paci = Indicador_paci.objects.filter(paci__student=estudiante)
-
-    paci_estudiante = (
-        PaciAppModel.objects.filter(student_id=estudiante.id)
-        .select_related("axis", "subject")
-        .prefetch_related(
-            Prefetch(
-                "indicadores_paci",  # relación existente en tu modelo
-                queryset=Indicador_paci.objects.all(),  # opcional: añadir filtros si los necesitas
-                to_attr="indicadores",  # cada PaciAppModel tendrá .indicadores
-            )
-        )
-    )
-    
-    asignaturas = (
-        Asignatura.objects.filter(
-            paci_subject__student_id=estudiante.id
-        ).prefetch_related(
-            Prefetch(
-                "paci_subject", queryset=paci_estudiante, to_attr="paci_estudiante"
-            )
-        )
-    ).distinct()
-
-    asignaturas_data = []
-
-    for asig in asignaturas:
-        asignaturas_data.append({"id": asig.id, "nombre": asig.nombre})
-    context = {
-        "indicadores_paci": indicadores_paci,
-        "estudiante": estudiante,
-        "asignatura": asignaturas,
-        "asignaturas": json.dumps(asignaturas_data),
-        "num_evaluacion": num,
-    }
-    return render(request, "indicadores.html", context)
-
 def calcular_nota(pjes: dict, pje_alumno: dict) -> dict:
     notas_finales = {}
 
@@ -108,124 +67,137 @@ def calcular_nota(pjes: dict, pje_alumno: dict) -> dict:
 
 def evaluar(request, id, num=1):
     estudiante = get_student(request, id)
-    asignatura_qs = Asignatura.objects.all()
-    mapa_asignaturas = {a.nombre: a for a in asignatura_qs}
-    print(f"MAPA ASIGNATURA {mapa_asignaturas}")
+    if request.method == "POST":
+        asignatura_qs = Asignatura.objects.all()
+        mapa_asignaturas = {a.nombre: a for a in asignatura_qs}
 
-    adecuaciones_list = []
-    puntajes = []
+        adecuaciones_list = []
+        puntajes = []
 
-    for key, value in request.POST.items():
-        if key.startswith("csrfmiddlewaretoken"):
-            continue
-        print(key)
-        if key.startswith("adecuaciones_"):
-            adecuaciones_list.append(value)
-        if key.startswith("puntaje_"):
-            name_puntaje = key.split("_")
-            asignatura = name_puntaje[1]
-            indicador = "_".join(name_puntaje[2:])
-            puntajes.append({"asignatura": asignatura, "indicador": indicador, "puntaje": value})
-            print(
-                f"INDICADOR: {indicador} - ASIGNATURA: {asignatura} - PUNTAJE: {value}"
-            )
-    print(adecuaciones_list)
-    print(puntajes)
+        for key, value in request.POST.items():
+            if key.startswith("csrfmiddlewaretoken"):
+                continue
+            if key.startswith("adecuaciones_"):
+                adecuaciones_list.append(value)
+            if key.startswith("puntaje_"):
+                name_puntaje = key.split("_")
+                asignatura = name_puntaje[1]
+                indicador = "_".join(name_puntaje[2:])
+                puntajes.append({"asignatura": asignatura, "indicador": indicador, "puntaje": value})
 
-    pje_alumno = {}
-    dict_pjes_max = {}
+        pje_alumno = {}
+        dict_pjes_max = {}
 
-    for asig in asignatura_qs:
-        json_data = request.POST.get(f"json_asig_{asig.id}")
-        if json_data:
-            try:
-                indicadores_seleccionados = json.loads(json_data)
+        for asig in asignatura_qs:
+            json_data = request.POST.get(f"json_asig_{asig.id}")
+            if json_data:
+                try:
+                    indicadores_seleccionados = json.loads(json_data)
 
-                dict_pjes_max[asig.nombre] = len(indicadores_seleccionados) * 4
+                    dict_pjes_max[asig.nombre] = len(indicadores_seleccionados) * 4
 
-                suma_puntos = sum(
-                    int(item.get("puntaje", 0)) for item in indicadores_seleccionados
-                )
-                pje_alumno[asig.nombre] = suma_puntos
-            except json.JSONDecodeError:
+                    suma_puntos = sum(
+                        int(item.get("puntaje", 0)) for item in indicadores_seleccionados
+                    )
+                    pje_alumno[asig.nombre] = suma_puntos
+                except json.JSONDecodeError:
+                    dict_pjes_max[asig.nombre] = 0
+                    pje_alumno[asig.nombre] = 0
+            else:
                 dict_pjes_max[asig.nombre] = 0
                 pje_alumno[asig.nombre] = 0
-        else:
-            dict_pjes_max[asig.nombre] = 0
-            pje_alumno[asig.nombre] = 0
 
-    dict_pjes_corte = {nombre: p_max * 0.6 for nombre, p_max in dict_pjes_max.items()}
+        dict_pjes_corte = {nombre: p_max * 0.6 for nombre, p_max in dict_pjes_max.items()}
 
-    pjes_para_calcular = [dict_pjes_max, dict_pjes_corte]
+        pjes_para_calcular = [dict_pjes_max, dict_pjes_corte]
 
-    notas = calcular_nota(pjes_para_calcular, pje_alumno)
-    print(notas)
-    try:
-        with transaction.atomic():
-            # ---------------------------------------------------------
-            # PASO 1: Gestionar Instrumento (El Contenedor Principal)
-            # ---------------------------------------------------------
-            # Ya no pasamos 'nota=' porque el campo fue eliminado del modelo Instrumento.
-            instrumento_evaluacion, created = Instrumento_evaluacion.objects.get_or_create(
-                estudiante=estudiante,
-                numero_evaluacion=num,
-                defaults={} # Puedes agregar otros campos default aquí si tienes (ej. fecha)
+        notas = calcular_nota(pjes_para_calcular, pje_alumno)
+        try:
+            with transaction.atomic():
+                instrumento_evaluacion, created = Instrumento_evaluacion.objects.get_or_create(
+                    estudiante=estudiante,
+                    numero_evaluacion=num,
+                    defaults={}
+                )
+
+                for asignatura_nombre, valor_nota in notas.items():
+                    asig_obj = mapa_asignaturas.get(asignatura_nombre)
+
+                    if asig_obj:
+                        Nota.objects.update_or_create(
+                            instrumento=instrumento_evaluacion,
+                            asignatura=asig_obj,
+                            defaults={'nota': valor_nota}
+                        )
+
+                instrumento_evaluacion.adecuaciones.all().delete()
+
+                for texto_adecuacion in adecuaciones_list:
+                    if texto_adecuacion:
+                        Adecuacion_curricular.objects.create(
+                            instrumento=instrumento_evaluacion,
+                            adecuacion=texto_adecuacion
+                        )
+
+                instrumento_evaluacion.indicadores.all().delete()
+                for item in puntajes:
+                    asig_model = mapa_asignaturas.get(item["asignatura"])
+                    if asig_model:
+                        Indicadores_instrumento.objects.create(
+                            instrumento=instrumento_evaluacion,
+                            indicador=item["indicador"],
+                            asignatura=asig_model,
+                            puntaje_obtenido=item["puntaje"],
+                        )
+
+        except Exception as e:
+            print(f"Error en la transacción: {e}")
+
+        return redirect("coreApp:estudiantes")
+
+    # GET request: display the evaluation form
+    indicadores_paci = Indicador_paci.objects.filter(paci__student=estudiante)
+
+    paci_estudiante = (
+        PaciAppModel.objects.filter(student_id=estudiante.id)
+        .select_related("axis", "subject")
+        .prefetch_related(
+            Prefetch(
+                "indicadores_paci",
+                queryset=Indicador_paci.objects.all(),
+                to_attr="indicadores",
             )
+        )
+    )
+    
+    asignaturas = (
+        Asignatura.objects.filter(
+            paci_subject__student_id=estudiante.id
+        ).prefetch_related(
+            Prefetch(
+                "paci_subject", queryset=paci_estudiante, to_attr="paci_estudiante"
+            )
+        )
+    ).distinct()
 
-            # ---------------------------------------------------------
-            # PASO 2: Gestionar Notas (AHORA SON MÚLTIPLES)
-            # ---------------------------------------------------------
-            # Iteramos por TODAS las asignaturas que vienen del formulario
-            for asignatura_nombre, valor_nota in notas.items():
-                asig_obj = mapa_asignaturas.get(asignatura_nombre)
+    asignaturas_data = []
 
-                if asig_obj:
-                    # Buscamos si ya existe nota para ESTA asignatura en ESTE instrumento
-                    Nota.objects.update_or_create(
-                        instrumento=instrumento_evaluacion, # Vínculo al padre
-                        asignatura=asig_obj,
-                        defaults={'nota': valor_nota} # Actualizamos el valor
-                    )
+    for asig in asignaturas:
+        asignaturas_data.append({"id": asig.id, "nombre": asig.nombre})
+    context = {
+        "indicadores_paci": indicadores_paci,
+        "estudiante": estudiante,
+        "asignatura": asignaturas,
+        "asignaturas": json.dumps(asignaturas_data),
+        "num_evaluacion": num,
+    }
+    return render(request, "indicadores.html", context)
 
-            # ---------------------------------------------------------
-            # PASO 3: Gestionar Adecuaciones (Igual que definimos antes)
-            # ---------------------------------------------------------
-            # 1. Borramos las existentes para este instrumento (evita duplicados/basura)
-            instrumento_evaluacion.adecuaciones.all().delete()
-
-            # 2. Creamos las nuevas
-            for texto_adecuacion in adecuaciones_list:
-                if texto_adecuacion:
-                    Adecuacion_curricular.objects.create(
-                        instrumento=instrumento_evaluacion,
-                        adecuacion=texto_adecuacion
-                    )
-
-            # ---------------------------------------------------------
-            # PASO 4: Guardar Indicadores (Se mantiene igual)
-            # ---------------------------------------------------------
-            instrumento_evaluacion.indicadores.all().delete()
-            for item in puntajes:
-                asig_model = mapa_asignaturas.get(item["asignatura"])
-                if asig_model:
-                    Indicadores_instrumento.objects.create(
-                        instrumento=instrumento_evaluacion,
-                        indicador=item["indicador"],
-                        asignatura=asig_model,
-                        puntaje_obtenido=item["puntaje"],
-                    )
-
-    except Exception as e:
-        print(f"Error en la transacción: {e}")
-
-    return redirect("coreApp:estudiantes")
-
-def ver_notas(request, id, num=1):
+def ver_notas(request, id):
     estudiante = get_student(request, id)
 
     instrumentos = Instrumento_evaluacion.objects.filter(
-        estudiante=estudiante,
-        numero_evaluacion=num
+        estudiante=estudiante
     ).prefetch_related(
         'notas',
         'notas__asignatura',
@@ -233,7 +205,6 @@ def ver_notas(request, id, num=1):
         'indicadores__asignatura',
         'adecuaciones'
     )
-    print(instrumentos)
     instrumento = instrumentos.first()
 
     asignaturas = Asignatura.objects.filter(
@@ -253,8 +224,8 @@ def ver_notas(request, id, num=1):
         }
         
     for inst in instrumentos:
-        num = inst.numero_evaluacion
-        if num not in [1, 2, 3]:
+        num_eval = inst.numero_evaluacion
+        if num_eval not in [1, 2, 3]:
             continue
         for nota in inst.notas.all():
             asig_id = nota.asignatura_id
@@ -269,7 +240,7 @@ def ver_notas(request, id, num=1):
                     'cantidad': 0
                 }
             val = float(nota.nota) if nota.nota else None
-            notas_dict[asig_id][f'n{num}'] = val
+            notas_dict[asig_id][f'n{num_eval}'] = val
             if val is not None:
                 notas_dict[asig_id]['suma'] += val
                 notas_dict[asig_id]['cantidad'] += 1
@@ -284,9 +255,6 @@ def ver_notas(request, id, num=1):
             promedio_general_cantidad += 1
 
     promedio_final = round(promedio_general_suma / promedio_general_cantidad, 1) if promedio_general_cantidad > 0 else 0
-
-    a = notas_dict
-    print(a)
 
     context = {
         "estudiante": estudiante,

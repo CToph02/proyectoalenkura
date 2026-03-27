@@ -18,6 +18,7 @@ def index(request):
 def estudiantes_view(request):
     user = request.user
     estudiantes = Estudiante.objects.none()
+    num = 1
     
     if hasattr(user, 'sala') and user.sala:
         estudiantes = Estudiante.objects.filter(
@@ -41,6 +42,7 @@ def estudiantes_view(request):
 
     context = {
         "estudiantes": estudiantes,
+        "num_evaluacion": num,
         'sala': user.sala if hasattr(user, 'sala') else None,
     }
 

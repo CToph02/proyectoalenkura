@@ -7,7 +7,7 @@
         </h1>
     </div>
 
-    <form action="{% url 'instrumentosApp:evaluar_estudiante' estudiante.id estudiante.cantidad_evaluaciones %}" method="POST" id="evaluacionForm">
+    <form action="{% url 'instrumentosApp:instrumentos_list' estudiante.id num_evaluacion %}" method="POST" id="evaluacionForm">
         {% csrf_token %} 
         {% for asig in asignatura %}
         <div

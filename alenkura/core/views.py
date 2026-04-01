@@ -18,20 +18,23 @@ def index(request):
 def estudiantes_view(request):
     user = request.user
     estudiantes = Estudiante.objects.none()
-    num = 1
     
     if hasattr(user, 'sala') and user.sala:
         estudiantes = Estudiante.objects.filter(
             curso__sala_id=user.sala.id
         ).annotate(
             tiene_paci=Exists(PaciAppModel.objects.filter(student=OuterRef("pk"))),
+            tiene_instrumento=Exists(Instrumento_evaluacion.objects.filter(estudiante=OuterRef("pk"))),
             cantidad_evaluaciones=Count(
-                'instrumento',
-                filter=Q(instrumento__notas__isnull=False),
-                distinct=True
+                'instrumento', distinct=True
             ),
             tiene_nota=Case(
-                When(cantidad_evaluaciones=3, then=Value(True)),
+                When(cantidad_evaluaciones__gt=0, then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField()
+            ),
+            evaluaciones_completas=Case(
+                When(cantidad_evaluaciones__gte=3, then=Value(True)),
                 default=Value(False),
                 output_field=BooleanField()
             )
@@ -42,7 +45,6 @@ def estudiantes_view(request):
 
     context = {
         "estudiantes": estudiantes,
-        "num_evaluacion": num,
         'sala': user.sala if hasattr(user, 'sala') else None,
     }
 

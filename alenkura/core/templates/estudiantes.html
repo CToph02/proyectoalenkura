@@ -23,58 +23,65 @@
         </thead>
         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
             {% for estudiante in estudiantes %}
-                <tr class="*:first:font-medium dark:*:text-white">
-                    <!-- Datos personales -->
-                    <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.rut }}</td>
-                    <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.first_name }}</td>
-                    <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.last_name }}</td>
-                    <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.edad }}</td>
-                    <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.curso.name }}</td>
-                    
-                    <!-- Acciones -->
-                    <td class="flex gap-4 justify-center px-3 py-2 whitespace-nowrap">
-                        {% if estudiante.tiene_paci %}
-                            <!-- Usuario con PACI -->
-                            <a class="w-40 text-center rounded-xl bg-green-600 p-2 text-white text-sm hover:bg-green-700 transition-colors shadow-sm"
-                            href="{% url 'paciApp:pdf_paci' estudiante.id %}">
-                                Descargar P.A.C.I.
-                            </a>
-                            <a class="w-40 text-center rounded-xl bg-blue-600 p-2 text-white text-sm hover:bg-green-700 transition-colors shadow-sm"
-                            href="{% url 'paciApp:edit_paci' estudiante.id %}">
-                                Editar P.A.C.I.
-                            </a>
-                            
-                            {% if estudiante.tiene_instrumento %}
-                                <a class="w-40 text-center rounded-xl bg-emerald-600 p-2 text-white text-sm hover:bg-emerald-700 transition-colors shadow-sm"
-                                href="{% url 'instrumentosApp:evaluar' estudiante.id %}">
-                                    Ver Instrumento
-                                </a>
-                            {% elif estudiante.cantidad_evaluaciones >= 1 %}
-                                <a class="w-40 text-center rounded-xl bg-blue-600 p-2 text-white text-sm hover:bg-blue-700 transition-colors shadow-sm"
-                                href="{% url 'coreApp:send_mail' estudiante.id %}">
-                                    Enviar correo
-                                </a>
-                                <a class="w-40 text-center rounded-xl bg-emerald-600 p-2 text-white text-sm hover:bg-emerald-700 transition-colors shadow-sm"
-                                href="{% url 'instrumentosApp:notas' estudiante.id %}">
-                                    Ver notas
-                                </a>
-                            {% else %}
-                                <a class="w-40 text-center rounded-xl bg-emerald-600 p-2 text-white text-sm hover:bg-emerald-700 transition-colors shadow-sm"
-                                href="{% url 'instrumentosApp:instrumentos_list' estudiante.id num_evaluacion %}">
-                                    Evaluar estudiante
-                                </a>
-                            {% endif %}
-                            
-                        {% else %}
-                            <!-- Usuario sin PACI -->
-                            <a class="w-40 text-center rounded-xl bg-green-600 p-2 text-white text-sm hover:bg-green-700 transition-colors shadow-sm"
-                            href="{% url 'paciApp:paci_list' estudiante.id %}">
-                                Agregar P.A.C.I.
-                            </a>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
+    <tr class="*:first:font-medium dark:*:text-white">
+        <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.rut }}</td>
+        <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.first_name }}</td>
+        <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.last_name }}</td>
+        <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.edad }}</td>
+        <td class="text-center px-3 py-2 whitespace-nowrap">{{ estudiante.curso.name }}</td>
+        
+        <td class="flex gap-4 justify-center px-3 py-2 whitespace-nowrap">
+            
+            {# --- SECCIÓN P.A.C.I. --- #}
+            {% if estudiante.tiene_paci %}
+                <a class="w-40 text-center rounded-xl bg-green-600 p-2 text-white text-sm hover:bg-green-700 transition-colors shadow-sm"
+                   href="{% url 'paciApp:pdf_paci' estudiante.id %}">
+                    Descargar P.A.C.I.
+                </a>
+                <a class="w-40 text-center rounded-xl bg-blue-600 p-2 text-white text-sm hover:bg-blue-700 transition-colors shadow-sm"
+                   href="{% url 'paciApp:edit_paci' estudiante.id %}">
+                    Editar P.A.C.I.
+                </a>
+            {% else %}
+                <a class="w-40 text-center rounded-xl bg-green-600 p-2 text-white text-sm hover:bg-green-700 transition-colors shadow-sm"
+                   href="{% url 'paciApp:paci_list' estudiante.id %}">
+                    Agregar P.A.C.I.
+                </a>
+            {% endif %}
+
+            {# --- SECCIÓN INSTRUMENTOS (Separada para que siempre se evalúe) --- #}
+            <!-- {% if estudiante.tiene_instrumento %}
+                <a class="w-40 text-center rounded-xl bg-emerald-600 p-2 text-white text-sm hover:bg-emerald-700 transition-colors shadow-sm"
+                   href="{% url 'instrumentosApp:evaluar' estudiante.id estudiante.cantidad_evaluaciones %}">
+                    Ver Instrumento
+                </a>
+            {% endif %} -->
+
+            {% if estudiante.cantidad_evaluaciones > 1 %}
+            <a class="w-40 text-center rounded-xl bg-emerald-600 p-2 text-white text-sm hover:bg-emerald-700 transition-colors shadow-sm"
+                   href="{% url 'instrumentosApp:notas' estudiante.id %}">
+                    Ver notas
+                </a>
+            {% endif %}
+
+            {% if estudiante.cantidad_evaluaciones < 3 %} 
+                {# Si tiene menos de 3, puede seguir evaluando #}
+                <a class="w-40 text-center rounded-xl bg-emerald-600 p-2 text-white text-sm hover:bg-emerald-700 transition-colors shadow-sm"
+                   href="{% url 'instrumentosApp:evaluar' estudiante.id estudiante.cantidad_evaluaciones|add:1 %}">
+                    Evaluar estudiante
+                </a>
+            {% else %}
+                {# Si ya completó las evaluaciones, ve notas y envía correo #}
+                <a class="w-40 text-center rounded-xl bg-blue-600 p-2 text-white text-sm hover:bg-blue-700 transition-colors shadow-sm"
+                   href="{% url 'coreApp:send_mail' estudiante.id %}">
+                    Enviar correo
+                </a>
+                
+            {% endif %}
+
+        </td>
+    </tr>
+{% endfor %}
         </tbody>
     </table>
 </div>
